@@ -14,8 +14,6 @@ import {
 import { useQuery } from 'react-query';
 import { api, apiUtils } from '../services/api';
 
-//ESTE COMENTARIO ES UNA PRUEBA PARA VER SI SE PUEDE HACER UN COMMIT DESDE EL FRONTEND
-
 const HomePage = () => {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.1 });
   const [featuresRef, featuresInView] = useInView({ triggerOnce: true, threshold: 0.1 });
