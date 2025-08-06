@@ -84,30 +84,41 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section ref={heroRef} className="gradient-bg py-20 lg:py-32">
-        <div className="container-xl section-padding">
+      <section ref={heroRef} className="relative py-20 lg:py-32 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80"
+            alt="Paneles solares de alta eficiencia"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+        </div>
+        
+        <div className="container-xl section-padding relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <h1 className="text-hero gradient-text mb-6">
+            <h1 className="text-hero text-white mb-6 font-bold">
               Invierte en el Futuro de la Energía Solar
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-100 mb-8 max-w-2xl mx-auto">
               Conectamos inversores con proyectos de energía solar comunitaria. 
               Obtén retornos competitivos mientras contribuyes a un planeta más sostenible.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/proyectos" className="btn btn-primary text-lg px-8 py-4">
+              <Link to="/proyectos" className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg">
                 Explorar Proyectos
                 <HiOutlineArrowRight className="w-5 h-5 ml-2" />
               </Link>
               
-              <Link to="/contacto" className="btn btn-outline text-lg px-8 py-4">
+              <Link to="/contacto" className="btn border-2 border-white text-white hover:bg-white hover:text-primary-600 text-lg px-8 py-4">
                 Conocer Más
               </Link>
             </div>
