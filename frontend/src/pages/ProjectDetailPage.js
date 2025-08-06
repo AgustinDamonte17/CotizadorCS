@@ -301,12 +301,12 @@ const ProjectDetailPage = () => {
                   <p className="text-gray-600 mb-4">
                     Calcula el retorno de tu inversión en este proyecto
                   </p>
-                  <button
-                    onClick={() => setShowSimulator(true)}
-                    className="btn btn-primary w-full"
+                  <Link
+                    to={`/simular/${project.id}`}
+                    className="btn btn-primary w-full text-center"
                   >
                     Simular Inversión
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

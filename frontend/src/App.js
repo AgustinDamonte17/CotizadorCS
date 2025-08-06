@@ -10,6 +10,7 @@ import Footer from './components/Layout/Footer';
 import HomePage from './pages/HomePage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
+import SimulationPage from './pages/SimulationPage';
 import SimulationsPage from './pages/SimulationsPage';
 import ContactPage from './pages/ContactPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -34,6 +35,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/proyectos" element={<ProjectsPage />} />
               <Route path="/proyectos/:id" element={<ProjectDetailPage />} />
+              <Route path="/simular/:id" element={<SimulationPage />} />
               <Route path="/mis-simulaciones" element={<SimulationsPage />} />
               <Route path="/contacto" element={<ContactPage />} />
               
