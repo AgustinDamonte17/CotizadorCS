@@ -31,12 +31,14 @@ Una aplicación web completa desarrollada con Django (backend) y React (frontend
 ```
 WeSolar/
 ├── backend/                 # Django API Backend
+│   ├── venv/               # Entorno virtual de Python
 │   ├── wesolar/            # Configuración principal
 │   ├── projects/           # Aplicación de proyectos solares
 │   ├── simulations/        # Motor de simulación de inversiones
 │   ├── core/              # Funcionalidades centrales
 │   └── manage.py          # CLI de Django
 ├── frontend/               # React Frontend
+│   ├── node_modules/      # Dependencias de Node.js
 │   ├── public/            # Archivos estáticos
 │   ├── src/
 │   │   ├── components/    # Componentes reutilizables
@@ -45,6 +47,8 @@ WeSolar/
 │   │   ├── services/      # APIs y utilidades
 │   │   └── index.js       # Punto de entrada
 │   └── package.json       # Dependencias de Node
+├── start.bat              # Script de inicio (Windows)
+├── start.sh               # Script de inicio (Linux/Mac)
 └── requirements.txt       # Dependencias de Python
 ```
 
