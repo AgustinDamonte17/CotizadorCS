@@ -50,6 +50,7 @@ const ProjectDetailPage = () => {
   });
   
   const simulationType = watch('simulation_type');
+  const monthlyConsumption = watch('monthly_consumption_kwh');
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
@@ -64,6 +65,25 @@ const ProjectDetailPage = () => {
       setValue('number_of_panels', '');
     }
   }, [simulationType, setValue]);
+
+  // Calculate maximum panels based on monthly consumption
+  const calculateMaxPanels = React.useCallback(() => {
+    if (!monthlyConsumption || !project) return null;
+    
+    // Solar generation factors (same as backend)
+    const annualGenerationFactor = 1500; // kWh per kWp per year
+    const performanceRatio = 0.85; // System efficiency
+    const panelPowerKw = project.panel_power_wp / 1000; // Convert Wp to kW
+    
+    // Calculate required system size for 100% coverage
+    const annualConsumption = monthlyConsumption * 12;
+    const requiredPowerKw = annualConsumption / (annualGenerationFactor * performanceRatio);
+    const maxPanels = Math.floor(requiredPowerKw / panelPowerKw);
+    
+    return Math.max(1, maxPanels); // At least 1 panel
+  }, [monthlyConsumption, project]);
+
+  const maxPanels = calculateMaxPanels();
   
   // Create simulation mutation
   const createSimulationMutation = useMutation(api.createSimulation, {
@@ -409,18 +429,35 @@ const ProjectDetailPage = () => {
                   
                   {simulationType === 'panels' && (
                     <div>
-                      <label className="form-label">Cantidad de Paneles</label>
+                      <label className="form-label">
+                        Cantidad de Paneles
+                        {maxPanels && (
+                          <span className="text-sm text-gray-500 font-normal">
+                            {' '}(máximo {maxPanels} para tu consumo)
+                          </span>
+                        )}
+                      </label>
                       <input
                         type="number"
                         {...register('number_of_panels', {
                           required: 'Número de paneles es requerido',
-                          min: { value: 1, message: 'Mínimo 1 panel' }
+                          min: { value: 1, message: 'Mínimo 1 panel' },
+                          max: maxPanels ? { 
+                            value: maxPanels, 
+                            message: `Máximo ${maxPanels} paneles para tu consumo de ${monthlyConsumption} kWh/mes` 
+                          } : undefined
                         })}
                         min="1"
+                        max={maxPanels || undefined}
                         className="input"
                       />
                       {errors.number_of_panels && (
                         <p className="form-error">{errors.number_of_panels.message}</p>
+                      )}
+                      {maxPanels && monthlyConsumption && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          💡 Con {maxPanels} paneles cubrirás aproximadamente el 100% de tu consumo mensual
+                        </p>
                       )}
                     </div>
                   )}
