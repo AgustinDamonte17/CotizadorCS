@@ -70,6 +70,25 @@ const SimulationPage = () => {
     }
   }, [simulationType, setValue]);
 
+  // Calculate maximum panels based on monthly consumption
+  const calculateMaxPanels = React.useCallback(() => {
+    if (!monthlyConsumption || !project) return null;
+    
+    // Solar generation factors (same as backend)
+    const annualGenerationFactor = 1500; // kWh per kWp per year
+    const performanceRatio = 0.85; // System efficiency
+    const panelPowerKw = project.panel_power_wp / 1000; // Convert Wp to kW
+    
+    // Calculate required system size for 100% coverage
+    const annualConsumption = monthlyConsumption * 12;
+    const requiredPowerKw = annualConsumption / (annualGenerationFactor * performanceRatio);
+    const maxPanels = Math.floor(requiredPowerKw / panelPowerKw);
+    
+    return Math.max(1, maxPanels); // At least 1 panel
+  }, [monthlyConsumption, project]);
+
+  const maxPanels = calculateMaxPanels();
+
   // Create simulation mutation
   const createSimulationMutation = useMutation(
     (data) => api.createSimulation({ ...data, project_id: id }),
@@ -206,19 +225,6 @@ const SimulationPage = () => {
                   )}
                 </div>
 
-                {/* Simulation Type */}
-                <div>
-                  <label className="form-label">Tipo de Simulación</label>
-                  <select
-                    {...register('simulation_type', { required: 'Selecciona un tipo' })}
-                    className="input"
-                  >
-                    <option value="coverage">Por Cobertura de Consumo</option>
-                    <option value="panels">Por Número de Paneles</option>
-                    <option value="investment">Por Monto de Inversión</option>
-                  </select>
-                </div>
-
                 {/* Monthly Consumption */}
                 <div>
                   <label className="form-label">Consumo Mensual (kWh)</label>
@@ -269,6 +275,19 @@ const SimulationPage = () => {
                   )}
                 </div>
 
+                {/* Simulation Type */}
+                <div>
+                  <label className="form-label">Tipo de Simulación</label>
+                  <select
+                    {...register('simulation_type', { required: 'Selecciona un tipo' })}
+                    className="input"
+                  >
+                    <option value="coverage">Por Cobertura de Consumo</option>
+                    <option value="panels">Por Número de Paneles</option>
+                    <option value="investment">Por Monto de Inversión</option>
+                  </select>
+                </div>
+
                 {/* Dynamic Fields Based on Simulation Type */}
                 {simulationType === 'coverage' && (
                   <div>
@@ -314,20 +333,37 @@ const SimulationPage = () => {
 
                 {simulationType === 'panels' && (
                   <div>
-                    <label className="form-label">Número de Paneles</label>
+                    <label className="form-label">
+                      Número de Paneles
+                      {maxPanels && (
+                        <span className="text-sm text-gray-500 font-normal">
+                          {' '}(máximo {maxPanels} para tu consumo)
+                        </span>
+                      )}
+                    </label>
                     <input
                       type="number"
                       {...register('number_of_panels', {
                         required: 'Número de paneles es requerido',
-                        min: { value: 1, message: 'Mínimo 1 panel' }
+                        min: { value: 1, message: 'Mínimo 1 panel' },
+                        max: maxPanels ? { 
+                          value: maxPanels, 
+                          message: `Máximo ${maxPanels} paneles para tu consumo de ${monthlyConsumption} kWh/mes` 
+                        } : undefined
                       })}
                       min="1"
+                      max={maxPanels || undefined}
                       step="1"
                       className="input"
                       placeholder="ej. 10"
                     />
                     {errors.number_of_panels && (
                       <p className="form-error">{errors.number_of_panels.message}</p>
+                    )}
+                    {maxPanels && monthlyConsumption && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        💡 Con {maxPanels} paneles cubrirás aproximadamente el 100% de tu consumo mensual
+                      </p>
                     )}
                   </div>
                 )}
@@ -519,6 +555,71 @@ const SimulationResults = ({ result, project }) => {
                 {apiUtils.formatCurrency(simulation.annual_savings_ars)}
               </div>
               <div className="text-sm text-gray-600">Ahorro anual</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Solar Park Visualization */}
+        <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <HiOutlineLightningBolt className="w-5 h-5 text-green-600 mr-2" />
+            Tu Participación en el Parque Solar
+          </h4>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Tu potencia: {apiUtils.formatPower(simulation.installed_power_kw)}</span>
+              <span>Capacidad total: {apiUtils.formatPower(project.available_power)}</span>
+            </div>
+            
+            {/* Solar Park Grid */}
+            <div className="relative">
+              <div 
+                className="grid gap-1 bg-gray-100 p-4 rounded-lg"
+                style={{ gridTemplateColumns: 'repeat(20, 1fr)' }}
+              >
+                {Array.from({ length: 100 }, (_, i) => {
+                  const userPercentage = Math.min((simulation.installed_power_kw / project.available_power) * 100, 100);
+                  const isUserPanel = i < Math.floor(userPercentage);
+                  
+                  return (
+                    <div
+                      key={i}
+                      className={`
+                        aspect-square rounded-sm transition-all duration-300 transform hover:scale-110
+                        ${isUserPanel 
+                          ? 'bg-gradient-to-br from-green-400 to-green-600 shadow-sm' 
+                          : 'bg-gray-300'
+                        }
+                      `}
+                      style={{
+                        animationDelay: `${i * 20}ms`
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              
+              {/* Percentage Label */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {apiUtils.formatNumber((simulation.installed_power_kw / project.available_power) * 100, 1)}%
+                  </div>
+                  <div className="text-xs text-gray-600 text-center">de participación</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-sm"></div>
+                <span className="text-gray-600">Tu inversión</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+                <span className="text-gray-600">Disponible</span>
+              </div>
             </div>
           </div>
         </div>
