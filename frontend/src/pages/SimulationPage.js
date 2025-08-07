@@ -56,6 +56,20 @@ const SimulationPage = () => {
   const monthlyConsumption = watch('monthly_consumption_kwh');
   const investmentAmount = watch('investment_amount_usd');
 
+  // Clear other fields when simulation type changes
+  React.useEffect(() => {
+    if (simulationType === 'coverage') {
+      setValue('number_of_panels', '');
+      setValue('investment_amount_usd', '');
+    } else if (simulationType === 'panels') {
+      setValue('coverage_percentage', 50);
+      setValue('investment_amount_usd', '');
+    } else if (simulationType === 'investment') {
+      setValue('coverage_percentage', 50);
+      setValue('number_of_panels', '');
+    }
+  }, [simulationType, setValue]);
+
   // Create simulation mutation
   const createSimulationMutation = useMutation(
     (data) => api.createSimulation({ ...data, project_id: id }),
@@ -79,15 +93,23 @@ const SimulationPage = () => {
     setIsCalculating(true);
     setSimulationResult(null);
     
-    // Convert string values to numbers where needed
+    // Base data common to all simulation types
     const processedData = {
-      ...data,
+      project_id: parseInt(id),
+      user_email: data.user_email,
       monthly_consumption_kwh: parseInt(data.monthly_consumption_kwh) || 0,
       tariff_category_id: parseInt(data.tariff_category_id) || null,
-      coverage_percentage: parseInt(data.coverage_percentage) || 50,
-      number_of_panels: data.number_of_panels ? parseInt(data.number_of_panels) : null,
-      investment_amount_usd: data.investment_amount_usd ? parseFloat(data.investment_amount_usd) : null,
+      simulation_type: data.simulation_type,
     };
+
+    // Add only the relevant parameter based on simulation type
+    if (data.simulation_type === 'coverage') {
+      processedData.coverage_percentage = parseInt(data.coverage_percentage) || 50;
+    } else if (data.simulation_type === 'panels') {
+      processedData.number_of_panels = parseInt(data.number_of_panels) || null;
+    } else if (data.simulation_type === 'investment') {
+      processedData.investment_amount_usd = parseFloat(data.investment_amount_usd) || null;
+    }
     
     console.log('Processed data:', processedData); // Para debugging
     createSimulationMutation.mutate(processedData);
@@ -253,14 +275,35 @@ const SimulationPage = () => {
                     <label className="form-label">
                       Porcentaje de Cobertura: {coveragePercentage}%
                     </label>
-                    <input
-                      type="range"
-                      {...register('coverage_percentage')}
-                      min="10"
-                      max="100"
-                      step="5"
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                    />
+                    <div className="relative py-2">
+                      {/* Barra de fondo */}
+                      <div className="w-full h-2 bg-gray-200 rounded-lg">
+                        {/* Barra de progreso verde */}
+                        <div 
+                          className="h-2 bg-primary-500 rounded-lg transition-all duration-75"
+                          style={{ 
+                            width: `${((coveragePercentage - 10) / (100 - 10)) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                      {/* Slider funcional encima */}
+                      <input
+                        type="range"
+                        {...register('coverage_percentage')}
+                        min="10"
+                        max="100"
+                        step="1"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        style={{ margin: 0 }}
+                      />
+                      {/* Círculo del slider */}
+                      <div 
+                        className="absolute top-1/2 w-4 h-4 bg-primary-600 border-2 border-white rounded-full shadow-md transform -translate-y-1/2 -translate-x-1/2 transition-all duration-75 pointer-events-none"
+                        style={{ 
+                          left: `${((coveragePercentage - 10) / (100 - 10)) * 100}%` 
+                        }}
+                      ></div>
+                    </div>
                     <div className="flex justify-between text-sm text-gray-600 mt-1">
                       <span>10%</span>
                       <span>50%</span>
@@ -275,6 +318,7 @@ const SimulationPage = () => {
                     <input
                       type="number"
                       {...register('number_of_panels', {
+                        required: 'Número de paneles es requerido',
                         min: { value: 1, message: 'Mínimo 1 panel' }
                       })}
                       min="1"
@@ -294,6 +338,7 @@ const SimulationPage = () => {
                     <input
                       type="number"
                       {...register('investment_amount_usd', {
+                        required: 'Monto de inversión es requerido',
                         min: { value: 1, message: 'Mínimo $1 USD' }
                       })}
                       min="1"

@@ -37,7 +37,7 @@ const ProjectDetailPage = () => {
   );
   
   // Simulation form
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       simulation_type: 'coverage',
       monthly_consumption_kwh: '',
@@ -50,6 +50,20 @@ const ProjectDetailPage = () => {
   });
   
   const simulationType = watch('simulation_type');
+
+  // Clear other fields when simulation type changes
+  React.useEffect(() => {
+    if (simulationType === 'coverage') {
+      setValue('number_of_panels', '');
+      setValue('investment_amount_usd', '');
+    } else if (simulationType === 'panels') {
+      setValue('coverage_percentage', '50');
+      setValue('investment_amount_usd', '');
+    } else if (simulationType === 'investment') {
+      setValue('coverage_percentage', '50');
+      setValue('number_of_panels', '');
+    }
+  }, [simulationType, setValue]);
   
   // Create simulation mutation
   const createSimulationMutation = useMutation(api.createSimulation, {
@@ -399,6 +413,7 @@ const ProjectDetailPage = () => {
                       <input
                         type="number"
                         {...register('number_of_panels', {
+                          required: 'Número de paneles es requerido',
                           min: { value: 1, message: 'Mínimo 1 panel' }
                         })}
                         min="1"
@@ -416,6 +431,7 @@ const ProjectDetailPage = () => {
                       <input
                         type="number"
                         {...register('investment_amount_usd', {
+                          required: 'Monto de inversión es requerido',
                           min: { value: 1, message: 'Mínimo $1 USD' }
                         })}
                         min="1"
