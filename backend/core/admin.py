@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import ContactMessage, SiteSettings, Newsletter
 
+# prueba prueba prueba buenas practicas branch 1
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
