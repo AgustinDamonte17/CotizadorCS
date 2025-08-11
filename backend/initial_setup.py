@@ -21,45 +21,29 @@ from core.models import SiteSettings
 
 
 def create_tariff_categories():
-    """Create sample tariff categories"""
+    """Create simplified tariff categories"""
     print("Creating tariff categories...")
     
     categories = [
         {
-            'name': 'Residencial Básico',
-            'code': 'R1',
-            'description': 'Tarifa residencial para consumos bajos',
-            'energy_charge_peak': Decimal('15.50'),
-            'energy_charge_valley': Decimal('12.30'),
-            'fixed_charge_monthly': Decimal('850.00'),
-            'peak_percentage': Decimal('35.0'),
+            'name': 'Residencial',
+            'code': 'RES',
+            'description': 'Categoría para usuarios residenciales',
         },
         {
-            'name': 'Residencial Medio',
-            'code': 'R2',
-            'description': 'Tarifa residencial para consumos medios',
-            'energy_charge_peak': Decimal('18.75'),
-            'energy_charge_valley': Decimal('14.80'),
-            'fixed_charge_monthly': Decimal('1200.00'),
-            'peak_percentage': Decimal('40.0'),
+            'name': 'Comercial',
+            'code': 'COM',
+            'description': 'Categoría para establecimientos comerciales',
         },
         {
-            'name': 'Residencial Alto',
-            'code': 'R3',
-            'description': 'Tarifa residencial para consumos altos',
-            'energy_charge_peak': Decimal('22.40'),
-            'energy_charge_valley': Decimal('17.60'),
-            'fixed_charge_monthly': Decimal('1500.00'),
-            'peak_percentage': Decimal('45.0'),
+            'name': 'Industrial',
+            'code': 'IND',
+            'description': 'Categoría para instalaciones industriales',
         },
         {
-            'name': 'Pequeño Comercio',
-            'code': 'C1',
-            'description': 'Tarifa para pequeños comercios',
-            'energy_charge_peak': Decimal('25.80'),
-            'energy_charge_valley': Decimal('19.20'),
-            'fixed_charge_monthly': Decimal('2000.00'),
-            'peak_percentage': Decimal('55.0'),
+            'name': 'Grandes Consumos',
+            'code': 'GC',
+            'description': 'Categoría para grandes consumidores de energía',
         },
     ]
     

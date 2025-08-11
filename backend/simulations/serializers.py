@@ -3,15 +3,11 @@ from .models import InvestmentSimulation, TariffCategory, ExchangeRate
 
 
 class TariffCategorySerializer(serializers.ModelSerializer):
-    """Serializer for tariff categories"""
+    """Serializer for simplified tariff categories"""
     
     class Meta:
         model = TariffCategory
-        fields = [
-            'id', 'name', 'code', 'description',
-            'energy_charge_peak', 'energy_charge_valley', 
-            'fixed_charge_monthly', 'peak_percentage'
-        ]
+        fields = ['id', 'name', 'code', 'description']
 
 
 class ExchangeRateSerializer(serializers.ModelSerializer):
@@ -26,12 +22,13 @@ class SimulationInputSerializer(serializers.Serializer):
     """Serializer for simulation input parameters"""
     
     project_id = serializers.IntegerField()
-    monthly_consumption_kwh = serializers.DecimalField(max_digits=8, decimal_places=2, min_value=0)
+    monthly_bill_ars = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
     tariff_category_id = serializers.IntegerField()
-    user_email = serializers.EmailField(required=False, allow_blank=True)
+    user_email = serializers.EmailField(required=True)
+    user_phone = serializers.CharField(max_length=20, required=True)
     
     # One of these three must be provided
-    coverage_percentage = serializers.DecimalField(
+    bill_coverage_percentage = serializers.DecimalField(
         max_digits=5, decimal_places=2, min_value=0, max_value=100, 
         required=False, allow_null=True
     )
@@ -41,10 +38,16 @@ class SimulationInputSerializer(serializers.Serializer):
         required=False, allow_null=True
     )
     
+    def validate_user_phone(self, value):
+        """Validate that phone number starts with +54"""
+        if not value.startswith('+54'):
+            value = '+54' + value.lstrip('+').lstrip('54')
+        return value
+    
     def validate(self, data):
         """Validate that exactly one simulation parameter is provided"""
         simulation_params = [
-            data.get('coverage_percentage'),
+            data.get('bill_coverage_percentage'),
             data.get('number_of_panels'),
             data.get('investment_amount_usd')
         ]
@@ -55,7 +58,7 @@ class SimulationInputSerializer(serializers.Serializer):
         if len(provided_params) != 1:
             raise serializers.ValidationError(
                 "Debe proporcionar exactamente uno de los siguientes parámetros: "
-                "coverage_percentage, number_of_panels, o investment_amount_usd"
+                "bill_coverage_percentage, number_of_panels, o investment_amount_usd"
             )
         
         return data
@@ -76,13 +79,14 @@ class InvestmentSimulationSerializer(serializers.ModelSerializer):
         model = InvestmentSimulation
         fields = [
             'id', 'project_name', 'project_location', 'tariff_category_name',
-            'monthly_consumption_kwh', 'simulation_type',
-            'coverage_percentage', 'number_of_panels', 'investment_amount_usd',
+            'user_email', 'user_phone',
+            'monthly_bill_ars', 'simulation_type',
+            'bill_coverage_percentage', 'number_of_panels', 'investment_amount_usd',
             'total_investment_usd', 'total_investment_ars',
             'installed_power_kw', 'annual_generation_kwh', 'monthly_generation_kwh',
             'monthly_savings_ars', 'annual_savings_ars',
             'monthly_savings_usd', 'annual_savings_usd',
-            'payback_period_years', 'coverage_achieved', 'roi_annual',
+            'payback_period_years', 'bill_coverage_achieved', 'roi_annual',
             'exchange_rate_used', 'created_at'
         ]
 
@@ -105,11 +109,11 @@ class SimulationComparisonSerializer(serializers.Serializer):
     """Serializer for comparing multiple simulation scenarios"""
     
     project_id = serializers.IntegerField()
-    monthly_consumption_kwh = serializers.DecimalField(max_digits=8, decimal_places=2, min_value=0)
+    monthly_bill_ars = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
     tariff_category_id = serializers.IntegerField()
     
     # Multiple scenarios to compare
-    coverage_percentages = serializers.ListField(
+    bill_coverage_percentages = serializers.ListField(
         child=serializers.DecimalField(max_digits=5, decimal_places=2, min_value=0, max_value=100),
         required=False,
         allow_empty=False
@@ -128,7 +132,7 @@ class SimulationComparisonSerializer(serializers.Serializer):
     def validate(self, data):
         """Validate that at least one scenario list is provided"""
         scenario_lists = [
-            data.get('coverage_percentages'),
+            data.get('bill_coverage_percentages'),
             data.get('panel_quantities'),
             data.get('investment_amounts')
         ]

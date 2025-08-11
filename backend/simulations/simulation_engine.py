@@ -2,12 +2,12 @@
 Investment Simulation Engine for Solar Projects
 
 This module contains the core logic for calculating solar investment returns
-based on user consumption, tariff category, and investment parameters.
+based on user monthly bill, tariff category, and investment parameters.
 """
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any, Optional
-from .models import InvestmentSimulation, TariffCategory, ExchangeRate
+from .models import InvestmentSimulation, TariffCategory, ExchangeRate, ENERGY_PRICE_USD_PER_KWH
 from projects.models import SolarProject
 
 
@@ -26,18 +26,27 @@ class SolarInvestmentCalculator:
         self.system_degradation = Decimal('0.005')  # 0.5% annual degradation
         self.performance_ratio = Decimal('0.85')  # System efficiency
     
-    def simulate_by_coverage(
+    def simulate_by_bill_coverage(
         self, 
-        monthly_consumption_kwh: Decimal, 
-        coverage_percentage: Decimal,
-        user_email: str = ""
+        monthly_bill_ars: Decimal, 
+        bill_coverage_percentage: Decimal,
+        user_email: str = "",
+        user_phone: str = ""
     ) -> InvestmentSimulation:
         """
-        Simulate investment based on desired coverage percentage
+        Simulate investment based on desired bill coverage percentage
         """
-        # Calculate required generation
-        annual_consumption = monthly_consumption_kwh * 12
-        required_annual_generation = annual_consumption * (coverage_percentage / 100)
+        # Calculate target monthly savings in ARS
+        target_monthly_savings_ars = monthly_bill_ars * (bill_coverage_percentage / 100)
+        
+        # Calculate required monthly generation in kWh
+        # Savings = Generation (kWh) * Energy Price (USD/kWh) * Exchange Rate (ARS/USD)
+        required_monthly_generation_kwh = target_monthly_savings_ars / (
+            Decimal(str(ENERGY_PRICE_USD_PER_KWH)) * self.exchange_rate
+        )
+        
+        # Calculate required annual generation
+        required_annual_generation = required_monthly_generation_kwh * 12
         
         # Calculate required system size
         required_power_kw = required_annual_generation / (
@@ -68,16 +77,17 @@ class SolarInvestmentCalculator:
         # Calculate metrics
         payback_period = total_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
         roi_annual = (annual_savings_ars / total_investment_ars) * 100 if total_investment_ars > 0 else Decimal('0')
-        actual_coverage = (actual_monthly_generation / monthly_consumption_kwh) * 100
+        actual_bill_coverage = (monthly_savings_ars / monthly_bill_ars) * 100
         
         # Create simulation object
         simulation = InvestmentSimulation(
             project=self.project,
             user_email=user_email,
-            monthly_consumption_kwh=monthly_consumption_kwh,
+            user_phone=user_phone,
+            monthly_bill_ars=monthly_bill_ars,
             tariff_category=self.tariff_category,
-            simulation_type='coverage',
-            coverage_percentage=coverage_percentage,
+            simulation_type='bill_coverage',
+            bill_coverage_percentage=bill_coverage_percentage,
             number_of_panels=number_of_panels,
             total_investment_usd=total_investment_usd,
             total_investment_ars=total_investment_ars,
@@ -87,7 +97,7 @@ class SolarInvestmentCalculator:
             monthly_savings_ars=monthly_savings_ars,
             annual_savings_ars=annual_savings_ars,
             payback_period_years=payback_period,
-            coverage_achieved=actual_coverage,
+            bill_coverage_achieved=actual_bill_coverage,
             roi_annual=roi_annual,
             exchange_rate_used=self.exchange_rate
         )
@@ -96,9 +106,10 @@ class SolarInvestmentCalculator:
     
     def simulate_by_panels(
         self, 
-        monthly_consumption_kwh: Decimal, 
+        monthly_bill_ars: Decimal, 
         number_of_panels: int,
-        user_email: str = ""
+        user_email: str = "",
+        user_phone: str = ""
     ) -> InvestmentSimulation:
         """
         Simulate investment based on number of panels
@@ -124,13 +135,14 @@ class SolarInvestmentCalculator:
         # Calculate metrics
         payback_period = total_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
         roi_annual = (annual_savings_ars / total_investment_ars) * 100 if total_investment_ars > 0 else Decimal('0')
-        coverage_achieved = (actual_monthly_generation / monthly_consumption_kwh) * 100
+        bill_coverage_achieved = (monthly_savings_ars / monthly_bill_ars) * 100
         
         # Create simulation object
         simulation = InvestmentSimulation(
             project=self.project,
             user_email=user_email,
-            monthly_consumption_kwh=monthly_consumption_kwh,
+            user_phone=user_phone,
+            monthly_bill_ars=monthly_bill_ars,
             tariff_category=self.tariff_category,
             simulation_type='panels',
             number_of_panels=number_of_panels,
@@ -142,7 +154,7 @@ class SolarInvestmentCalculator:
             monthly_savings_ars=monthly_savings_ars,
             annual_savings_ars=annual_savings_ars,
             payback_period_years=payback_period,
-            coverage_achieved=coverage_achieved,
+            bill_coverage_achieved=bill_coverage_achieved,
             roi_annual=roi_annual,
             exchange_rate_used=self.exchange_rate
         )
@@ -151,9 +163,10 @@ class SolarInvestmentCalculator:
     
     def simulate_by_investment(
         self, 
-        monthly_consumption_kwh: Decimal, 
+        monthly_bill_ars: Decimal, 
         investment_amount_usd: Decimal,
-        user_email: str = ""
+        user_email: str = "",
+        user_phone: str = ""
     ) -> InvestmentSimulation:
         """
         Simulate investment based on investment amount
@@ -188,13 +201,14 @@ class SolarInvestmentCalculator:
         # Calculate metrics
         payback_period = actual_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
         roi_annual = (annual_savings_ars / actual_investment_ars) * 100 if actual_investment_ars > 0 else Decimal('0')
-        coverage_achieved = (actual_monthly_generation / monthly_consumption_kwh) * 100
+        bill_coverage_achieved = (monthly_savings_ars / monthly_bill_ars) * 100
         
         # Create simulation object
         simulation = InvestmentSimulation(
             project=self.project,
             user_email=user_email,
-            monthly_consumption_kwh=monthly_consumption_kwh,
+            user_phone=user_phone,
+            monthly_bill_ars=monthly_bill_ars,
             tariff_category=self.tariff_category,
             simulation_type='investment',
             investment_amount_usd=investment_amount_usd,
@@ -207,7 +221,7 @@ class SolarInvestmentCalculator:
             monthly_savings_ars=monthly_savings_ars,
             annual_savings_ars=annual_savings_ars,
             payback_period_years=payback_period,
-            coverage_achieved=coverage_achieved,
+            bill_coverage_achieved=bill_coverage_achieved,
             roi_annual=roi_annual,
             exchange_rate_used=self.exchange_rate
         )
@@ -216,19 +230,14 @@ class SolarInvestmentCalculator:
     
     def _calculate_monthly_savings(self, monthly_generation_kwh: Decimal) -> Decimal:
         """
-        Calculate monthly savings based on generation and tariff
+        Calculate monthly savings based on generation using fixed energy price
         """
-        # Current monthly cost without solar
-        current_cost = self.tariff_category.calculate_monthly_cost(0)  # Only fixed costs
+        # Calculate savings using fixed energy price
+        # Savings = Generation (kWh) * Fixed Energy Price (USD/kWh) * Exchange Rate (ARS/USD)
+        energy_price_usd = Decimal(str(ENERGY_PRICE_USD_PER_KWH))
+        monthly_savings_ars = monthly_generation_kwh * energy_price_usd * self.exchange_rate
         
-        # Calculate energy savings (generation replaces consumption)
-        peak_generation = monthly_generation_kwh * (self.tariff_category.peak_percentage / 100)
-        valley_generation = monthly_generation_kwh * ((100 - self.tariff_category.peak_percentage) / 100)
-        
-        energy_savings = (peak_generation * self.tariff_category.energy_charge_peak + 
-                         valley_generation * self.tariff_category.energy_charge_valley)
-        
-        return energy_savings
+        return monthly_savings_ars
     
     def get_project_capacity_check(self, required_power_kw: Decimal) -> Dict[str, Any]:
         """
