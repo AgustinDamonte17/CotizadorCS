@@ -71,23 +71,26 @@ def create_simulation_view(request):
                 calculator = SolarInvestmentCalculator(project, tariff_category)
                 
                 # Determine simulation type and run calculation
-                if serializer.validated_data.get('coverage_percentage') is not None:
-                    simulation = calculator.simulate_by_coverage(
-                        monthly_consumption_kwh=serializer.validated_data['monthly_consumption_kwh'],
-                        coverage_percentage=serializer.validated_data['coverage_percentage'],
-                        user_email=serializer.validated_data.get('user_email', '')
+                if serializer.validated_data.get('bill_coverage_percentage') is not None:
+                    simulation = calculator.simulate_by_bill_coverage(
+                        monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
+                        bill_coverage_percentage=serializer.validated_data['bill_coverage_percentage'],
+                        user_email=serializer.validated_data['user_email'],
+                        user_phone=serializer.validated_data['user_phone']
                     )
                 elif serializer.validated_data.get('number_of_panels') is not None:
                     simulation = calculator.simulate_by_panels(
-                        monthly_consumption_kwh=serializer.validated_data['monthly_consumption_kwh'],
+                        monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
                         number_of_panels=serializer.validated_data['number_of_panels'],
-                        user_email=serializer.validated_data.get('user_email', '')
+                        user_email=serializer.validated_data['user_email'],
+                        user_phone=serializer.validated_data['user_phone']
                     )
                 elif serializer.validated_data.get('investment_amount_usd') is not None:
                     simulation = calculator.simulate_by_investment(
-                        monthly_consumption_kwh=serializer.validated_data['monthly_consumption_kwh'],
+                        monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
                         investment_amount_usd=serializer.validated_data['investment_amount_usd'],
-                        user_email=serializer.validated_data.get('user_email', '')
+                        user_email=serializer.validated_data['user_email'],
+                        user_phone=serializer.validated_data['user_phone']
                     )
                 
                 # Save simulation
@@ -135,17 +138,17 @@ def compare_simulations_view(request):
             
             # Initialize calculator
             calculator = SolarInvestmentCalculator(project, tariff_category)
-            monthly_consumption = serializer.validated_data['monthly_consumption_kwh']
+            monthly_bill = serializer.validated_data['monthly_bill_ars']
             
             comparison_results = []
             
-            # Coverage percentage scenarios
-            if serializer.validated_data.get('coverage_percentages'):
-                for coverage in serializer.validated_data['coverage_percentages']:
-                    simulation = calculator.simulate_by_coverage(monthly_consumption, coverage)
+            # Bill coverage percentage scenarios
+            if serializer.validated_data.get('bill_coverage_percentages'):
+                for coverage in serializer.validated_data['bill_coverage_percentages']:
+                    simulation = calculator.simulate_by_bill_coverage(monthly_bill, coverage)
                     simulation_data = InvestmentSimulationSerializer(simulation).data
                     comparison_results.append({
-                        'type': 'coverage',
+                        'type': 'bill_coverage',
                         'parameter': float(coverage),
                         'simulation': simulation_data
                     })
@@ -153,7 +156,7 @@ def compare_simulations_view(request):
             # Panel quantity scenarios
             if serializer.validated_data.get('panel_quantities'):
                 for panels in serializer.validated_data['panel_quantities']:
-                    simulation = calculator.simulate_by_panels(monthly_consumption, panels)
+                    simulation = calculator.simulate_by_panels(monthly_bill, panels)
                     simulation_data = InvestmentSimulationSerializer(simulation).data
                     comparison_results.append({
                         'type': 'panels',
@@ -164,7 +167,7 @@ def compare_simulations_view(request):
             # Investment amount scenarios
             if serializer.validated_data.get('investment_amounts'):
                 for amount in serializer.validated_data['investment_amounts']:
-                    simulation = calculator.simulate_by_investment(monthly_consumption, amount)
+                    simulation = calculator.simulate_by_investment(monthly_bill, amount)
                     simulation_data = InvestmentSimulationSerializer(simulation).data
                     comparison_results.append({
                         'type': 'investment',

@@ -3,42 +3,16 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from projects.models import SolarProject
 import uuid
 
+# Fixed energy price for savings calculation
+ENERGY_PRICE_USD_PER_KWH = 0.06
+
 
 class TariffCategory(models.Model):
-    """Model for electricity tariff categories"""
+    """Model for simplified electricity tariff categories"""
     
     name = models.CharField('Nombre de la Categoría', max_length=100)
     code = models.CharField('Código', max_length=20, unique=True)
     description = models.TextField('Descripción', blank=True)
-    
-    # Tariff structure (in ARS per kWh)
-    energy_charge_peak = models.DecimalField(
-        'Cargo Energía Pico (ARS/kWh)', 
-        max_digits=8, 
-        decimal_places=4,
-        validators=[MinValueValidator(0)]
-    )
-    energy_charge_valley = models.DecimalField(
-        'Cargo Energía Valle (ARS/kWh)', 
-        max_digits=8, 
-        decimal_places=4,
-        validators=[MinValueValidator(0)]
-    )
-    fixed_charge_monthly = models.DecimalField(
-        'Cargo Fijo Mensual (ARS)', 
-        max_digits=8, 
-        decimal_places=2,
-        validators=[MinValueValidator(0)]
-    )
-    
-    # Time distribution (percentage of consumption in peak hours)
-    peak_percentage = models.DecimalField(
-        'Porcentaje Consumo Pico (%)', 
-        max_digits=5, 
-        decimal_places=2,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        default=30
-    )
     
     created_at = models.DateTimeField('Fecha de Creación', auto_now_add=True)
     updated_at = models.DateTimeField('Última Actualización', auto_now=True)
@@ -50,16 +24,6 @@ class TariffCategory(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.code})"
-    
-    def calculate_monthly_cost(self, monthly_kwh):
-        """Calculate monthly electricity cost for given consumption"""
-        peak_kwh = monthly_kwh * (self.peak_percentage / 100)
-        valley_kwh = monthly_kwh * ((100 - self.peak_percentage) / 100)
-        
-        energy_cost = (peak_kwh * self.energy_charge_peak + 
-                      valley_kwh * self.energy_charge_valley)
-        
-        return energy_cost + self.fixed_charge_monthly
 
 
 class ExchangeRate(models.Model):
@@ -95,9 +59,9 @@ class InvestmentSimulation(models.Model):
     """Model to store investment simulations"""
     
     SIMULATION_TYPE_CHOICES = [
-        ('coverage', 'Por Porcentaje de Cobertura'),
-        ('panels', 'Por Cantidad de Paneles'),
-        ('investment', 'Por Monto de Inversión'),
+        ('bill_coverage', 'Cobertura de Factura'),
+        ('panels', 'Número de Paneles'),
+        ('investment', 'Monto de Inversión'),
     ]
     
     # Unique identifier for the simulation
@@ -105,12 +69,13 @@ class InvestmentSimulation(models.Model):
     
     # Project and user information
     project = models.ForeignKey(SolarProject, on_delete=models.CASCADE, related_name='simulations')
-    user_email = models.EmailField('Email del Usuario', blank=True)  # Optional for tracking
+    user_email = models.EmailField('Email del Usuario')  # Required
+    user_phone = models.CharField('Teléfono del Usuario', max_length=20)  # Required, includes +54
     
     # Input parameters
-    monthly_consumption_kwh = models.DecimalField(
-        'Consumo Mensual (kWh)', 
-        max_digits=8, 
+    monthly_bill_ars = models.DecimalField(
+        'Factura Mensual (ARS)', 
+        max_digits=10, 
         decimal_places=2,
         validators=[MinValueValidator(0)]
     )
@@ -119,8 +84,8 @@ class InvestmentSimulation(models.Model):
     simulation_type = models.CharField('Tipo de Simulación', max_length=20, choices=SIMULATION_TYPE_CHOICES)
     
     # Variable input (depends on simulation type)
-    coverage_percentage = models.DecimalField(
-        'Porcentaje de Cobertura (%)', 
+    bill_coverage_percentage = models.DecimalField(
+        'Porcentaje de Cobertura de Factura (%)', 
         max_digits=5, 
         decimal_places=2,
         null=True, 
@@ -188,8 +153,8 @@ class InvestmentSimulation(models.Model):
     )
     
     # Additional metrics
-    coverage_achieved = models.DecimalField(
-        'Cobertura Lograda (%)', 
+    bill_coverage_achieved = models.DecimalField(
+        'Cobertura de Factura Lograda (%)', 
         max_digits=5, 
         decimal_places=2,
         validators=[MinValueValidator(0)]
@@ -216,7 +181,7 @@ class InvestmentSimulation(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Simulación {self.id} - {self.project.name}"
+        return f"Simulación {self.id} - {self.project.name} ({self.simulation_type})"
     
     @property
     def monthly_savings_usd(self):

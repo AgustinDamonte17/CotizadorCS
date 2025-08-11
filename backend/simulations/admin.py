@@ -4,10 +4,7 @@ from .models import InvestmentSimulation, TariffCategory, ExchangeRate
 
 @admin.register(TariffCategory)
 class TariffCategoryAdmin(admin.ModelAdmin):
-    list_display = [
-        'name', 'code', 'energy_charge_peak', 'energy_charge_valley', 
-        'fixed_charge_monthly', 'peak_percentage'
-    ]
+    list_display = ['name', 'code', 'description', 'created_at']
     list_filter = ['created_at']
     search_fields = ['name', 'code', 'description']
     readonly_fields = ['created_at', 'updated_at']
@@ -15,12 +12,6 @@ class TariffCategoryAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Información Básica', {
             'fields': ['name', 'code', 'description']
-        }),
-        ('Estructura Tarifaria', {
-            'fields': [
-                'energy_charge_peak', 'energy_charge_valley', 
-                'fixed_charge_monthly', 'peak_percentage'
-            ]
         }),
         ('Metadatos', {
             'fields': ['created_at', 'updated_at'],
@@ -45,22 +36,25 @@ class InvestmentSimulationAdmin(admin.ModelAdmin):
         'monthly_savings_ars', 'payback_period_years', 'roi_annual', 'created_at'
     ]
     list_filter = ['simulation_type', 'project', 'created_at', 'tariff_category']
-    search_fields = ['project__name', 'user_email', 'id']
+    search_fields = ['project__name', 'user_email', 'user_phone', 'id']
     readonly_fields = [
         'id', 'total_investment_usd', 'total_investment_ars',
         'installed_power_kw', 'annual_generation_kwh', 'monthly_generation_kwh',
         'monthly_savings_ars', 'annual_savings_ars', 'payback_period_years',
-        'coverage_achieved', 'roi_annual', 'exchange_rate_used', 'created_at'
+        'bill_coverage_achieved', 'roi_annual', 'exchange_rate_used', 'created_at'
     ]
     
     fieldsets = [
+        ('Información del Usuario', {
+            'fields': ['id', 'user_email', 'user_phone', 'created_at']
+        }),
         ('Información del Proyecto', {
-            'fields': ['id', 'project', 'user_email', 'created_at']
+            'fields': ['project', 'tariff_category']
         }),
         ('Parámetros de Entrada', {
             'fields': [
-                'monthly_consumption_kwh', 'tariff_category', 'simulation_type',
-                'coverage_percentage', 'number_of_panels', 'investment_amount_usd'
+                'monthly_bill_ars', 'simulation_type',
+                'bill_coverage_percentage', 'number_of_panels', 'investment_amount_usd'
             ]
         }),
         ('Resultados de la Simulación', {
@@ -68,7 +62,7 @@ class InvestmentSimulationAdmin(admin.ModelAdmin):
                 'total_investment_usd', 'total_investment_ars',
                 'installed_power_kw', 'annual_generation_kwh', 'monthly_generation_kwh',
                 'monthly_savings_ars', 'annual_savings_ars', 'payback_period_years',
-                'coverage_achieved', 'roi_annual', 'exchange_rate_used'
+                'bill_coverage_achieved', 'roi_annual', 'exchange_rate_used'
             ],
             'classes': ['collapse']
         })

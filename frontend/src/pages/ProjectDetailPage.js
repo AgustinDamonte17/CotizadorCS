@@ -39,51 +39,45 @@ const ProjectDetailPage = () => {
   // Simulation form
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      simulation_type: 'coverage',
-      monthly_consumption_kwh: '',
+      simulation_type: 'bill_coverage',
+      monthly_bill_ars: '',
       tariff_category_id: '',
-      coverage_percentage: '50',
+      bill_coverage_percentage: '50',
       number_of_panels: '',
       investment_amount_usd: '',
       user_email: userEmail,
+      user_phone: '',
     }
   });
   
   const simulationType = watch('simulation_type');
-  const monthlyConsumption = watch('monthly_consumption_kwh');
+  const monthlyBill = watch('monthly_bill_ars');
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
-    if (simulationType === 'coverage') {
+    if (simulationType === 'bill_coverage') {
       setValue('number_of_panels', '');
       setValue('investment_amount_usd', '');
     } else if (simulationType === 'panels') {
-      setValue('coverage_percentage', '50');
+      setValue('bill_coverage_percentage', '50');
       setValue('investment_amount_usd', '');
     } else if (simulationType === 'investment') {
-      setValue('coverage_percentage', '50');
+      setValue('bill_coverage_percentage', '50');
       setValue('number_of_panels', '');
     }
   }, [simulationType, setValue]);
 
-  // Calculate maximum panels based on monthly consumption
-  const calculateMaxPanels = React.useCallback(() => {
-    if (!monthlyConsumption || !project) return null;
+  // Calculate suggested maximum panels based on project availability
+  const maxAvailablePanels = React.useMemo(() => {
+    if (!project) return null;
     
-    // Solar generation factors (same as backend)
-    const annualGenerationFactor = 1500; // kWh per kWp per year
-    const performanceRatio = 0.85; // System efficiency
     const panelPowerKw = project.panel_power_wp / 1000; // Convert Wp to kW
-    
-    // Calculate required system size for 100% coverage
-    const annualConsumption = monthlyConsumption * 12;
-    const requiredPowerKw = annualConsumption / (annualGenerationFactor * performanceRatio);
-    const maxPanels = Math.floor(requiredPowerKw / panelPowerKw);
+    const maxPanels = Math.floor(project.available_power / panelPowerKw);
     
     return Math.max(1, maxPanels); // At least 1 panel
-  }, [monthlyConsumption, project]);
+  }, [project]);
 
-  const maxPanels = calculateMaxPanels();
+  const maxPanels = maxAvailablePanels;
   
   // Create simulation mutation
   const createSimulationMutation = useMutation(api.createSimulation, {
@@ -103,14 +97,15 @@ const ProjectDetailPage = () => {
   const onSubmit = (data) => {
     const payload = {
       project_id: parseInt(id),
-      monthly_consumption_kwh: parseFloat(data.monthly_consumption_kwh),
+      monthly_bill_ars: parseFloat(data.monthly_bill_ars),
       tariff_category_id: parseInt(data.tariff_category_id),
-      user_email: data.user_email || '',
+      user_email: data.user_email,
+      user_phone: data.user_phone,
     };
     
     // Add the specific simulation parameter
-    if (simulationType === 'coverage') {
-      payload.coverage_percentage = parseFloat(data.coverage_percentage);
+    if (simulationType === 'bill_coverage') {
+      payload.bill_coverage_percentage = parseFloat(data.bill_coverage_percentage);
     } else if (simulationType === 'panels') {
       payload.number_of_panels = parseInt(data.number_of_panels);
     } else if (simulationType === 'investment') {
@@ -346,31 +341,67 @@ const ProjectDetailPage = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   {/* User Email */}
                   <div>
-                    <label className="form-label">Email (opcional)</label>
+                    <label className="form-label">Email *</label>
                     <input
                       type="email"
-                      {...register('user_email')}
+                      {...register('user_email', { 
+                        required: 'Email es requerido',
+                        pattern: {
+                          value: /^\S+@\S+$/i,
+                          message: 'Email no válido'
+                        }
+                      })}
                       placeholder="tu@email.com"
-                      className="input"
+                      className={`input ${errors.user_email ? 'input-error' : ''}`}
                     />
-                    <p className="form-help">Para guardar tu simulación</p>
+                    {errors.user_email && (
+                      <p className="form-error">{errors.user_email.message}</p>
+                    )}
                   </div>
                   
-                  {/* Monthly Consumption */}
+                  {/* User Phone */}
                   <div>
-                    <label className="form-label">Consumo Mensual (kWh) *</label>
-                    <input
-                      type="number"
-                      {...register('monthly_consumption_kwh', { 
-                        required: 'Este campo es requerido',
-                        min: { value: 1, message: 'Debe ser mayor a 0' }
-                      })}
-                      placeholder="Ej: 300"
-                      className={`input ${errors.monthly_consumption_kwh ? 'input-error' : ''}`}
-                    />
-                    {errors.monthly_consumption_kwh && (
-                      <p className="form-error">{errors.monthly_consumption_kwh.message}</p>
+                    <label className="form-label">Teléfono *</label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        +54
+                      </span>
+                      <input
+                        type="tel"
+                        {...register('user_phone', { 
+                          required: 'Teléfono es requerido',
+                          minLength: { value: 8, message: 'Mínimo 8 dígitos' }
+                        })}
+                        placeholder="11 1234-5678"
+                        className={`input rounded-l-none ${errors.user_phone ? 'input-error' : ''}`}
+                      />
+                    </div>
+                    {errors.user_phone && (
+                      <p className="form-error">{errors.user_phone.message}</p>
                     )}
+                    <p className="form-help">Número sin el código de país</p>
+                  </div>
+                  
+                  {/* Monthly Bill */}
+                  <div>
+                    <label className="form-label">Factura Mensual (Impuestos incluidos) *</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                      <input
+                        type="number"
+                        {...register('monthly_bill_ars', { 
+                          required: 'Este campo es requerido',
+                          min: { value: 1, message: 'Debe ser mayor a $0' }
+                        })}
+                        placeholder="50000"
+                        className={`input pl-8 ${errors.monthly_bill_ars ? 'input-error' : ''}`}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">ARS</span>
+                    </div>
+                    {errors.monthly_bill_ars && (
+                      <p className="form-error">{errors.monthly_bill_ars.message}</p>
+                    )}
+                    <p className="form-help">Monto total de tu factura de luz mensual</p>
                   </div>
                   
                   {/* Tariff Category */}
@@ -401,19 +432,19 @@ const ProjectDetailPage = () => {
                       {...register('simulation_type')}
                       className="input"
                     >
-                      <option value="coverage">Por Porcentaje de Cobertura</option>
-                      <option value="panels">Por Cantidad de Paneles</option>
-                      <option value="investment">Por Monto de Inversión</option>
+                      <option value="bill_coverage">Cobertura de Factura</option>
+                      <option value="panels">Número de Paneles</option>
+                      <option value="investment">Monto de Inversión</option>
                     </select>
                   </div>
                   
                   {/* Dynamic Input Based on Simulation Type */}
-                  {simulationType === 'coverage' && (
+                  {simulationType === 'bill_coverage' && (
                     <div>
-                      <label className="form-label">Porcentaje de Cobertura (%)</label>
+                      <label className="form-label">Porcentaje de Cobertura de Factura (%)</label>
                       <input
                         type="number"
-                        {...register('coverage_percentage', {
+                        {...register('bill_coverage_percentage', {
                           min: { value: 1, message: 'Mínimo 1%' },
                           max: { value: 100, message: 'Máximo 100%' }
                         })}
@@ -421,9 +452,10 @@ const ProjectDetailPage = () => {
                         max="100"
                         className="input"
                       />
-                      {errors.coverage_percentage && (
-                        <p className="form-error">{errors.coverage_percentage.message}</p>
+                      {errors.bill_coverage_percentage && (
+                        <p className="form-error">{errors.bill_coverage_percentage.message}</p>
                       )}
+                      <p className="form-help">¿Qué porcentaje de tu factura quieres cubrir con energía solar?</p>
                     </div>
                   )}
                   
@@ -433,7 +465,7 @@ const ProjectDetailPage = () => {
                         Cantidad de Paneles
                         {maxPanels && (
                           <span className="text-sm text-gray-500 font-normal">
-                            {' '}(máximo {maxPanels} para tu consumo)
+                            {' '}(máximo {maxPanels} disponibles)
                           </span>
                         )}
                       </label>
@@ -444,7 +476,7 @@ const ProjectDetailPage = () => {
                           min: { value: 1, message: 'Mínimo 1 panel' },
                           max: maxPanels ? { 
                             value: maxPanels, 
-                            message: `Máximo ${maxPanels} paneles para tu consumo de ${monthlyConsumption} kWh/mes` 
+                            message: `Máximo ${maxPanels} paneles disponibles en este proyecto` 
                           } : undefined
                         })}
                         min="1"
@@ -454,9 +486,9 @@ const ProjectDetailPage = () => {
                       {errors.number_of_panels && (
                         <p className="form-error">{errors.number_of_panels.message}</p>
                       )}
-                      {maxPanels && monthlyConsumption && (
+                      {maxPanels && (
                         <p className="text-xs text-gray-600 mt-1">
-                          💡 Con {maxPanels} paneles cubrirás aproximadamente el 100% de tu consumo mensual
+                          💡 Este proyecto tiene {maxPanels} paneles disponibles para inversión
                         </p>
                       )}
                     </div>
@@ -588,9 +620,9 @@ const SimulationResults = ({ result, onReset }) => {
         </div>
         
         <div className="flex justify-between">
-          <span className="text-gray-600">Cobertura Lograda:</span>
+          <span className="text-gray-600">Cobertura de Factura Lograda:</span>
           <span className="font-semibold text-primary-600">
-            {apiUtils.formatNumber(simulation.coverage_achieved, 1)}%
+            {apiUtils.formatNumber(simulation.bill_coverage_achieved, 1)}%
           </span>
         </div>
       </div>

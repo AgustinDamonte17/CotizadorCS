@@ -41,53 +41,47 @@ const SimulationPage = () => {
   // Simulation form
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      simulation_type: 'coverage',
-      monthly_consumption_kwh: '',
+      simulation_type: 'bill_coverage',
+      monthly_bill_ars: '',
       tariff_category_id: '',
-      coverage_percentage: 50,
+      bill_coverage_percentage: 50,
       number_of_panels: '',
       investment_amount_usd: '',
       user_email: userEmail || '',
+      user_phone: '',
     }
   });
 
   const simulationType = watch('simulation_type');
-  const coveragePercentage = watch('coverage_percentage');
-  const monthlyConsumption = watch('monthly_consumption_kwh');
+  const billCoveragePercentage = watch('bill_coverage_percentage');
+  const monthlyBill = watch('monthly_bill_ars');
   const investmentAmount = watch('investment_amount_usd');
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
-    if (simulationType === 'coverage') {
+    if (simulationType === 'bill_coverage') {
       setValue('number_of_panels', '');
       setValue('investment_amount_usd', '');
     } else if (simulationType === 'panels') {
-      setValue('coverage_percentage', 50);
+      setValue('bill_coverage_percentage', 50);
       setValue('investment_amount_usd', '');
     } else if (simulationType === 'investment') {
-      setValue('coverage_percentage', 50);
+      setValue('bill_coverage_percentage', 50);
       setValue('number_of_panels', '');
     }
   }, [simulationType, setValue]);
 
-  // Calculate maximum panels based on monthly consumption
-  const calculateMaxPanels = React.useCallback(() => {
-    if (!monthlyConsumption || !project) return null;
+  // Calculate suggested maximum panels based on project availability
+  const maxAvailablePanels = React.useMemo(() => {
+    if (!project) return null;
     
-    // Solar generation factors (same as backend)
-    const annualGenerationFactor = 1500; // kWh per kWp per year
-    const performanceRatio = 0.85; // System efficiency
     const panelPowerKw = project.panel_power_wp / 1000; // Convert Wp to kW
-    
-    // Calculate required system size for 100% coverage
-    const annualConsumption = monthlyConsumption * 12;
-    const requiredPowerKw = annualConsumption / (annualGenerationFactor * performanceRatio);
-    const maxPanels = Math.floor(requiredPowerKw / panelPowerKw);
+    const maxPanels = Math.floor(project.available_power / panelPowerKw);
     
     return Math.max(1, maxPanels); // At least 1 panel
-  }, [monthlyConsumption, project]);
+  }, [project]);
 
-  const maxPanels = calculateMaxPanels();
+  const maxPanels = maxAvailablePanels;
 
   // Create simulation mutation
   const createSimulationMutation = useMutation(
@@ -116,14 +110,15 @@ const SimulationPage = () => {
     const processedData = {
       project_id: parseInt(id),
       user_email: data.user_email,
-      monthly_consumption_kwh: parseInt(data.monthly_consumption_kwh) || 0,
+      user_phone: data.user_phone,
+      monthly_bill_ars: parseFloat(data.monthly_bill_ars) || 0,
       tariff_category_id: parseInt(data.tariff_category_id) || null,
       simulation_type: data.simulation_type,
     };
 
     // Add only the relevant parameter based on simulation type
-    if (data.simulation_type === 'coverage') {
-      processedData.coverage_percentage = parseInt(data.coverage_percentage) || 50;
+    if (data.simulation_type === 'bill_coverage') {
+      processedData.bill_coverage_percentage = parseFloat(data.bill_coverage_percentage) || 50;
     } else if (data.simulation_type === 'panels') {
       processedData.number_of_panels = parseInt(data.number_of_panels) || null;
     } else if (data.simulation_type === 'investment') {
@@ -207,7 +202,7 @@ const SimulationPage = () => {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Email */}
                 <div>
-                  <label className="form-label">Email para recibir resultados</label>
+                  <label className="form-label">Email *</label>
                   <input
                     type="email"
                     {...register('user_email', {
@@ -225,23 +220,51 @@ const SimulationPage = () => {
                   )}
                 </div>
 
-                {/* Monthly Consumption */}
+                {/* Phone */}
                 <div>
-                  <label className="form-label">Consumo Mensual (kWh)</label>
-                  <input
-                    type="number"
-                    {...register('monthly_consumption_kwh', {
-                      required: 'Consumo mensual es requerido',
-                      min: { value: 1, message: 'Mínimo 1 kWh' }
-                    })}
-                    className="input"
-                    placeholder="ej. 500"
-                    min="1"
-                    step="1"
-                  />
-                  {errors.monthly_consumption_kwh && (
-                    <p className="form-error">{errors.monthly_consumption_kwh.message}</p>
+                  <label className="form-label">Teléfono *</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                      +54
+                    </span>
+                    <input
+                      type="tel"
+                      {...register('user_phone', {
+                        required: 'Teléfono es requerido',
+                        minLength: { value: 8, message: 'Mínimo 8 dígitos' }
+                      })}
+                      className={`input rounded-l-none ${errors.user_phone ? 'input-error' : ''}`}
+                      placeholder="11 1234-5678"
+                    />
+                  </div>
+                  {errors.user_phone && (
+                    <p className="form-error">{errors.user_phone.message}</p>
                   )}
+                  <p className="form-help">Número sin el código de país</p>
+                </div>
+
+                {/* Monthly Bill */}
+                <div>
+                  <label className="form-label">Factura Mensual (Impuestos incluidos) *</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      type="number"
+                      {...register('monthly_bill_ars', {
+                        required: 'Factura mensual es requerida',
+                        min: { value: 1, message: 'Debe ser mayor a $0' }
+                      })}
+                      className={`input pl-8 ${errors.monthly_bill_ars ? 'input-error' : ''}`}
+                      placeholder="50000"
+                      min="1"
+                      step="1"
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">ARS</span>
+                  </div>
+                  {errors.monthly_bill_ars && (
+                    <p className="form-error">{errors.monthly_bill_ars.message}</p>
+                  )}
+                  <p className="form-help">Monto total de tu factura de luz mensual</p>
                 </div>
 
                 {/* Tariff Category */}
@@ -257,13 +280,13 @@ const SimulationPage = () => {
                     {tariffCategories && Array.isArray(tariffCategories) ? (
                       tariffCategories.map(category => (
                         <option key={category.id} value={category.id}>
-                          {category.name} ({category.code}) - ${parseFloat(category.energy_charge_peak || 0).toFixed(2)} ARS/kWh
+                          {category.name} ({category.code})
                         </option>
                       ))
                     ) : tariffCategories?.results && Array.isArray(tariffCategories.results) ? (
                       tariffCategories.results.map(category => (
                         <option key={category.id} value={category.id}>
-                          {category.name} ({category.code}) - ${parseFloat(category.energy_charge_peak || 0).toFixed(2)} ARS/kWh
+                          {category.name} ({category.code})
                         </option>
                       ))
                     ) : (
@@ -282,17 +305,17 @@ const SimulationPage = () => {
                     {...register('simulation_type', { required: 'Selecciona un tipo' })}
                     className="input"
                   >
-                    <option value="coverage">Por Cobertura de Consumo</option>
-                    <option value="panels">Por Número de Paneles</option>
-                    <option value="investment">Por Monto de Inversión</option>
+                    <option value="bill_coverage">Cobertura de Factura</option>
+                    <option value="panels">Número de Paneles</option>
+                    <option value="investment">Monto de Inversión</option>
                   </select>
                 </div>
 
                 {/* Dynamic Fields Based on Simulation Type */}
-                {simulationType === 'coverage' && (
+                {simulationType === 'bill_coverage' && (
                   <div>
                     <label className="form-label">
-                      Porcentaje de Cobertura: {coveragePercentage}%
+                      Porcentaje de Cobertura de Factura: {billCoveragePercentage}%
                     </label>
                     <div className="relative py-2">
                       {/* Barra de fondo */}
@@ -301,14 +324,14 @@ const SimulationPage = () => {
                         <div 
                           className="h-2 bg-primary-500 rounded-lg transition-all duration-75"
                           style={{ 
-                            width: `${((coveragePercentage - 10) / (100 - 10)) * 100}%` 
+                            width: `${((billCoveragePercentage - 10) / (100 - 10)) * 100}%` 
                           }}
                         ></div>
                       </div>
                       {/* Slider funcional encima */}
                       <input
                         type="range"
-                        {...register('coverage_percentage')}
+                        {...register('bill_coverage_percentage')}
                         min="10"
                         max="100"
                         step="1"
@@ -319,7 +342,7 @@ const SimulationPage = () => {
                       <div 
                         className="absolute top-1/2 w-4 h-4 bg-primary-600 border-2 border-white rounded-full shadow-md transform -translate-y-1/2 -translate-x-1/2 transition-all duration-75 pointer-events-none"
                         style={{ 
-                          left: `${((coveragePercentage - 10) / (100 - 10)) * 100}%` 
+                          left: `${((billCoveragePercentage - 10) / (100 - 10)) * 100}%` 
                         }}
                       ></div>
                     </div>
@@ -348,7 +371,7 @@ const SimulationPage = () => {
                         min: { value: 1, message: 'Mínimo 1 panel' },
                         max: maxPanels ? { 
                           value: maxPanels, 
-                          message: `Máximo ${maxPanels} paneles para tu consumo de ${monthlyConsumption} kWh/mes` 
+                          message: `Máximo ${maxPanels} paneles disponibles en el proyecto` 
                         } : undefined
                       })}
                       min="1"
@@ -360,9 +383,9 @@ const SimulationPage = () => {
                     {errors.number_of_panels && (
                       <p className="form-error">{errors.number_of_panels.message}</p>
                     )}
-                    {maxPanels && monthlyConsumption && (
+                    {maxPanels && (
                       <p className="text-xs text-gray-600 mt-1">
-                        💡 Con {maxPanels} paneles cubrirás aproximadamente el 100% de tu consumo mensual
+                        💡 Máximo {maxPanels} paneles disponibles en este proyecto
                       </p>
                     )}
                   </div>
