@@ -4,7 +4,7 @@ from projects.models import SolarProject
 import uuid
 
 # Fixed energy price for savings calculation
-ENERGY_PRICE_USD_PER_KWH = 0.06
+ENERGY_PRICE_ARS_PER_KWH = 102.25  # Updated price in ARS per kWh
 
 
 class TariffCategory(models.Model):
@@ -145,6 +145,7 @@ class InvestmentSimulation(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0)]
     )
+
     payback_period_years = models.DecimalField(
         'Período de Retorno (años)', 
         max_digits=5, 
@@ -190,5 +191,10 @@ class InvestmentSimulation(models.Model):
     
     @property
     def annual_savings_usd(self):
-        """Calculate annual savings in USD"""
+        """Calculate annual savings in USD using blue exchange rate: (monthly_savings_ars / exchange_rate) * 12"""
+        return (self.monthly_savings_ars / self.exchange_rate_used) * 12
+    
+    @property
+    def annual_savings_usd_legacy(self):
+        """Calculate annual savings in USD using official exchange rate (legacy method)"""
         return self.annual_savings_ars / self.exchange_rate_used

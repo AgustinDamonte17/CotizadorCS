@@ -7,7 +7,7 @@ based on user monthly bill, tariff category, and investment parameters.
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any, Optional
-from .models import InvestmentSimulation, TariffCategory, ExchangeRate, ENERGY_PRICE_USD_PER_KWH
+from .models import InvestmentSimulation, TariffCategory, ExchangeRate, ENERGY_PRICE_ARS_PER_KWH
 from projects.models import SolarProject
 
 
@@ -70,9 +70,13 @@ class SolarInvestmentCalculator:
         
         total_investment_ars = total_investment_usd * self.exchange_rate
         
-        # Calculate savings
-        monthly_savings_ars = self._calculate_monthly_savings(actual_monthly_generation)
+        # Calculate savings using new formula (based on number of panels)
+        monthly_savings_ars = self._calculate_monthly_savings(number_of_panels)
         annual_savings_ars = monthly_savings_ars * 12
+        
+        # Calculate annual savings in USD using blue exchange rate
+        # Formula: (monthly_savings_ars / exchange_rate_blue) * 12
+        annual_savings_usd = (monthly_savings_ars / self.exchange_rate) * 12
         
         # Calculate metrics
         payback_period = total_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
@@ -112,7 +116,10 @@ class SolarInvestmentCalculator:
         user_phone: str = ""
     ) -> InvestmentSimulation:
         """
-        Simulate investment based on number of panels
+        Simulate investment based on number of panels with tiered pricing:
+        - 1-9 panels: $700 USD per panel
+        - 10-99 panels: $500 USD per panel  
+        - 100+ panels: $400 USD per panel
         """
         # Calculate system specifications
         panel_power_kw = self.project.panel_power_wp / 1000
@@ -120,17 +127,17 @@ class SolarInvestmentCalculator:
         actual_annual_generation = actual_power_kw * self.annual_generation_factor * self.performance_ratio
         actual_monthly_generation = actual_annual_generation / 12
         
-        # Calculate investment
-        total_investment_usd = number_of_panels * self.project.price_per_panel_usd
-        if not self.project.price_per_panel_usd:
-            # Calculate from price per Wp
-            total_investment_usd = actual_power_kw * 1000 * self.project.price_per_wp_usd
-        
+        # Calculate investment using tiered pricing
+        total_investment_usd = self._calculate_total_investment_tiered(number_of_panels)
         total_investment_ars = total_investment_usd * self.exchange_rate
         
-        # Calculate savings
-        monthly_savings_ars = self._calculate_monthly_savings(actual_monthly_generation)
+        # Calculate savings using new formula (based on number of panels)
+        monthly_savings_ars = self._calculate_monthly_savings(number_of_panels)
         annual_savings_ars = monthly_savings_ars * 12
+        
+        # Calculate annual savings in USD using blue exchange rate
+        # Formula: (monthly_savings_ars / exchange_rate_blue) * 12
+        annual_savings_usd = (monthly_savings_ars / self.exchange_rate) * 12
         
         # Calculate metrics
         payback_period = total_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
@@ -194,9 +201,13 @@ class SolarInvestmentCalculator:
         actual_annual_generation = actual_power_kw * self.annual_generation_factor * self.performance_ratio
         actual_monthly_generation = actual_annual_generation / 12
         
-        # Calculate savings
-        monthly_savings_ars = self._calculate_monthly_savings(actual_monthly_generation)
+        # Calculate savings using new formula (based on number of panels)
+        monthly_savings_ars = self._calculate_monthly_savings(number_of_panels)
         annual_savings_ars = monthly_savings_ars * 12
+        
+        # Calculate annual savings in USD using blue exchange rate
+        # Formula: (monthly_savings_ars / exchange_rate_blue) * 12
+        annual_savings_usd = (monthly_savings_ars / self.exchange_rate) * 12
         
         # Calculate metrics
         payback_period = actual_investment_ars / annual_savings_ars if annual_savings_ars > 0 else Decimal('999')
@@ -228,14 +239,71 @@ class SolarInvestmentCalculator:
         
         return simulation
     
-    def _calculate_monthly_savings(self, monthly_generation_kwh: Decimal) -> Decimal:
+    def _calculate_tiered_panel_price(self, number_of_panels: int) -> Decimal:
         """
-        Calculate monthly savings based on generation using fixed energy price
+        Calculate panel price based on tiered pricing:
+        - 1-9 panels: $700 USD per panel
+        - 10-99 panels: $500 USD per panel  
+        - 100+ panels: $400 USD per panel
         """
-        # Calculate savings using fixed energy price
-        # Savings = Generation (kWh) * Fixed Energy Price (USD/kWh) * Exchange Rate (ARS/USD)
-        energy_price_usd = Decimal(str(ENERGY_PRICE_USD_PER_KWH))
-        monthly_savings_ars = monthly_generation_kwh * energy_price_usd * self.exchange_rate
+        if number_of_panels <= 9:
+            return Decimal('700')
+        elif number_of_panels <= 99:
+            return Decimal('500')
+        else:
+            return Decimal('400')
+    
+    def _calculate_total_investment_tiered(self, number_of_panels: int) -> Decimal:
+        """
+        Calculate total investment using tiered pricing:
+        - 1-9 panels: $700 USD per panel
+        - 10-99 panels: $500 USD per panel  
+        - 100+ panels: $400 USD per panel
+        """
+        total_cost = Decimal('0')
+        remaining_panels = number_of_panels
+        
+        # First tier: 1-9 panels at $700 each
+        if remaining_panels > 0:
+            tier1_panels = min(remaining_panels, 9)
+            total_cost += tier1_panels * Decimal('700')
+            remaining_panels -= tier1_panels
+        
+        # Second tier: 10-99 panels at $500 each
+        if remaining_panels > 0:
+            tier2_panels = min(remaining_panels, 90)  # 99 - 9 = 90 panels in this tier
+            total_cost += tier2_panels * Decimal('500')
+            remaining_panels -= tier2_panels
+        
+        # Third tier: 100+ panels at $400 each
+        if remaining_panels > 0:
+            total_cost += remaining_panels * Decimal('400')
+        
+        return total_cost
+
+    def _calculate_monthly_savings(self, number_of_panels: int) -> Decimal:
+        """
+        Calculate monthly savings based on new formula:
+        Ahorro Mensual (ARS) = cant_paneles × 0.66 × precio_energia × 24 × 30 × 0.19
+        
+        Where:
+        - cant_paneles: Number of panels
+        - 0.66: Panel efficiency factor
+        - precio_energia: Energy price in ARS/kWh (102.25)
+        - 24: Hours per day
+        - 30: Days per month
+        - 0.19: System performance factor
+        """
+        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        
+        monthly_savings_ars = (
+            Decimal(str(number_of_panels)) * 
+            Decimal('0.66') * 
+            energy_price_ars * 
+            Decimal('24') * 
+            Decimal('30') * 
+            Decimal('0.19')
+        )
         
         return monthly_savings_ars
     
