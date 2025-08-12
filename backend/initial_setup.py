@@ -190,8 +190,8 @@ def create_site_settings():
     print("Creating site settings...")
     
     settings_data = {
-        'site_name': 'WeSolar',
-        'site_description': 'Plataforma líder en inversión en energía solar comunitaria. Conectamos inversores con proyectos sostenibles para un futuro más verde y rentable.',
+        'site_name': 'Simulador CS',
+        'site_description': 'Plataforma líder en simulación y cotización de inversiones en Comunidades Solares. Simulamos tus escenarios de inversión en energía solar.',
         'contact_email': 'info@wesolar.com',
         'contact_phone': '+54 11 4000-5000',
         'address': 'Av. Corrientes 1234, CABA, Argentina',

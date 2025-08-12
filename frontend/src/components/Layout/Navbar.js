@@ -42,7 +42,7 @@ const Navbar = () => {
               <HiOutlineSun className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-heading font-bold gradient-text">
-              {settings?.site_name || 'WeSolar'}
+              {settings?.site_name || 'Simulador CS'}
             </span>
           </Link>
           
@@ -75,7 +75,7 @@ const Navbar = () => {
               to="/proyectos"
               className="btn btn-primary"
             >
-              Invertir Ahora
+              Simular Ahora
             </Link>
           </div>
           
@@ -133,7 +133,7 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className="btn btn-primary w-full justify-center"
                 >
-                  Invertir Ahora
+                  Simular Ahora
                 </Link>
               </div>
             </div>

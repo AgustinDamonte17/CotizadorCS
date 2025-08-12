@@ -39,8 +39,8 @@ const ContactPage = () => {
     {
       icon: HiOutlineMail,
       title: 'Email',
-      content: settings?.contact_email || 'info@wesolar.com',
-      action: `mailto:${settings?.contact_email || 'info@wesolar.com'}`,
+      content: settings?.contact_email || 'info@simuladorcs.com',
+      action: `mailto:${settings?.contact_email || 'info@simuladorcs.com'}`,
     },
     {
       icon: HiOutlinePhone,

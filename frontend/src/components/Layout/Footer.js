@@ -135,13 +135,13 @@ const Footer = () => {
                 <HiOutlineSun className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-heading font-bold text-white">
-                {settings?.site_name || 'WeSolar'}
+                {settings?.site_name || 'Simulador CS'}
               </span>
             </div>
             
             <p className="text-gray-400 mb-6 max-w-md">
               {settings?.site_description || 
-                'Plataforma líder en inversión en energía solar comunitaria. Conectamos inversores con proyectos sostenibles para un futuro más verde.'}
+                'Plataforma líder en simulación y cotización de inversiones en Comunidades Solares. Simulamos tus escenarios de inversión en energía solar.'}
             </p>
             
             {/* Contact Info */}
@@ -256,7 +256,7 @@ const Footer = () => {
         <div className="container-xl section-padding py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} {settings?.site_name || 'WeSolar'}. 
+              © {new Date().getFullYear()} {settings?.site_name || 'Simulador CS'}. 
               Todos los derechos reservados.
             </p>
             

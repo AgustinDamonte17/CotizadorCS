@@ -24,7 +24,7 @@ class ContactMessage(models.Model):
 class SiteSettings(models.Model):
     """Model for storing site-wide settings"""
     
-    site_name = models.CharField('Nombre del Sitio', max_length=100, default='WeSolar')
+    site_name = models.CharField('Nombre del Sitio', max_length=100, default='Simulador CS')
     site_description = models.TextField('Descripción del Sitio', blank=True)
     contact_email = models.EmailField('Email de Contacto', blank=True)
     contact_phone = models.CharField('Teléfono de Contacto', max_length=20, blank=True)
@@ -78,8 +78,8 @@ class SiteSettings(models.Model):
         settings, created = cls.objects.get_or_create(
             pk=1,
             defaults={
-                'site_name': 'WeSolar',
-                'site_description': 'Plataforma de inversión en energía solar comunitaria'
+                'site_name': 'Simulador CS',
+                'site_description': 'Plataforma de simulación y cotización de inversiones en Comunidades Solares'
             }
         )
         return settings
