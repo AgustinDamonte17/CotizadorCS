@@ -570,14 +570,14 @@ const SimulationResults = ({ result, project }) => {
               <div className="text-2xl font-bold text-green-600 mb-1">
                 {apiUtils.formatCurrency(simulation.monthly_savings_ars)}
               </div>
-              <div className="text-sm text-gray-600">Ahorro mensual</div>
+              <div className="text-sm text-gray-600">Ahorro mensual (ARS)</div>
             </div>
             
             <div className="text-center p-4 border border-gray-200 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 mb-1">
-                {apiUtils.formatCurrency(simulation.annual_savings_ars)}
+                ${apiUtils.formatNumber(simulation.annual_savings_usd, 0)}
               </div>
-              <div className="text-sm text-gray-600">Ahorro anual</div>
+              <div className="text-sm text-gray-600">Ahorro anual (USD)</div>
             </div>
           </div>
         </div>

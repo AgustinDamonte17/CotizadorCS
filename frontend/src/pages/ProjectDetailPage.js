@@ -599,9 +599,16 @@ const SimulationResults = ({ result, onReset }) => {
         </div>
         
         <div className="flex justify-between">
-          <span className="text-gray-600">Ahorro Mensual:</span>
+          <span className="text-gray-600">Ahorro Mensual (ARS):</span>
           <span className="font-semibold text-green-600">
             {apiUtils.formatCurrency(simulation.monthly_savings_ars)}
+          </span>
+        </div>
+        
+        <div className="flex justify-between">
+          <span className="text-gray-600">Ahorro Anual (USD):</span>
+          <span className="font-semibold text-purple-600">
+            ${apiUtils.formatNumber(simulation.annual_savings_usd, 0)}
           </span>
         </div>
         
