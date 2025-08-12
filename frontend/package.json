@@ -1,7 +1,7 @@
 {
-  "name": "wesolar-frontend",
+  "name": "simulador-cs-frontend",
   "version": "1.0.0",
-  "description": "Frontend React para WeSolar - Plataforma de inversión en energía solar comunitaria",
+  "description": "Frontend React para Simulador CS - Plataforma de simulación y cotización de inversión en energía solar.",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",

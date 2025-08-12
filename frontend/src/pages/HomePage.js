@@ -161,12 +161,11 @@ const HomePage = () => {
             className="text-center mb-16"
           >
             <h2 className="text-section gradient-text mb-4">
-              ¿Por qué elegir WeSolar?
+              ¿Por qué elegir Simulador CS?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Nuestra plataforma combina tecnología avanzada, transparencia total y 
-              un enfoque sostenible para hacer que la inversión en energía solar sea 
-              accesible para todos.
+              conocimiento especializado para simular escenarios comparativos que te permitan tomar la mejor decisión..
             </p>
           </motion.div>
           
