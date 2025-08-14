@@ -255,30 +255,20 @@ class SolarInvestmentCalculator:
     
     def _calculate_total_investment_tiered(self, number_of_panels: int) -> Decimal:
         """
-        Calculate total investment using tiered pricing:
-        - 1-9 panels: $700 USD per panel
-        - 10-99 panels: $500 USD per panel  
-        - 100+ panels: $400 USD per panel
+        Calculate total investment using uniform pricing based on tier:
+        - 1-9 panels: $700 USD per panel (ALL panels at $700)
+        - 10-99 panels: $500 USD per panel (ALL panels at $500)
+        - 100+ panels: $400 USD per panel (ALL panels at $400)
         """
-        total_cost = Decimal('0')
-        remaining_panels = number_of_panels
+        # Determine the price per panel based on total quantity
+        if number_of_panels <= 9:
+            price_per_panel = Decimal('700')
+        elif number_of_panels <= 99:
+            price_per_panel = Decimal('500')
+        else:
+            price_per_panel = Decimal('400')
         
-        # First tier: 1-9 panels at $700 each
-        if remaining_panels > 0:
-            tier1_panels = min(remaining_panels, 9)
-            total_cost += tier1_panels * Decimal('700')
-            remaining_panels -= tier1_panels
-        
-        # Second tier: 10-99 panels at $500 each
-        if remaining_panels > 0:
-            tier2_panels = min(remaining_panels, 90)  # 99 - 9 = 90 panels in this tier
-            total_cost += tier2_panels * Decimal('500')
-            remaining_panels -= tier2_panels
-        
-        # Third tier: 100+ panels at $400 each
-        if remaining_panels > 0:
-            total_cost += remaining_panels * Decimal('400')
-        
+        total_cost = number_of_panels * price_per_panel
         return total_cost
 
     def _calculate_monthly_savings(self, number_of_panels: int) -> Decimal:
