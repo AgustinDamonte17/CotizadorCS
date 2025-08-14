@@ -12,29 +12,19 @@ Se ha implementado un nuevo sistema de precios escalonados para las simulaciones
 - **Tier 3 (100+ paneles)**: $400 USD por panel
 
 ### Lógica de Cálculo
-El costo total se calcula aplicando cada tier de forma acumulativa:
+El costo total se calcula aplicando un precio uniforme según el tier del número total de paneles:
 
 ```python
 def _calculate_total_investment_tiered(self, number_of_panels: int) -> Decimal:
-    total_cost = Decimal('0')
-    remaining_panels = number_of_panels
+    # Determine the price per panel based on total quantity
+    if number_of_panels <= 9:
+        price_per_panel = Decimal('700')
+    elif number_of_panels <= 99:
+        price_per_panel = Decimal('500')
+    else:
+        price_per_panel = Decimal('400')
     
-    # Tier 1: Primeros 9 paneles a $700 c/u
-    if remaining_panels > 0:
-        tier1_panels = min(remaining_panels, 9)
-        total_cost += tier1_panels * Decimal('700')
-        remaining_panels -= tier1_panels
-    
-    # Tier 2: Siguientes 90 paneles (10-99) a $500 c/u
-    if remaining_panels > 0:
-        tier2_panels = min(remaining_panels, 90)
-        total_cost += tier2_panels * Decimal('500')
-        remaining_panels -= tier2_panels
-    
-    # Tier 3: Paneles restantes (100+) a $400 c/u
-    if remaining_panels > 0:
-        total_cost += remaining_panels * Decimal('400')
-    
+    total_cost = number_of_panels * price_per_panel
     return total_cost
 ```
 
@@ -42,20 +32,19 @@ def _calculate_total_investment_tiered(self, number_of_panels: int) -> Decimal:
 
 ### Ejemplo 1: 5 Paneles (Tier 1)
 - 5 paneles × $700 = $3,500 USD
-- Precio promedio: $700/panel
+- Precio uniforme: $700/panel
 
-### Ejemplo 2: 50 Paneles (Tier 1 + Tier 2)
-- 9 paneles × $700 = $6,300 USD
-- 41 paneles × $500 = $20,500 USD
-- **Total**: $26,800 USD
-- Precio promedio: $536/panel
+### Ejemplo 2: 12 Paneles (Tier 2)
+- 12 paneles × $500 = $6,000 USD
+- Precio uniforme: $500/panel
 
-### Ejemplo 3: 150 Paneles (Todos los Tiers)
-- 9 paneles × $700 = $6,300 USD
-- 90 paneles × $500 = $45,000 USD
-- 51 paneles × $400 = $20,400 USD
-- **Total**: $71,700 USD
-- Precio promedio: $478/panel
+### Ejemplo 3: 50 Paneles (Tier 2)
+- 50 paneles × $500 = $25,000 USD
+- Precio uniforme: $500/panel
+
+### Ejemplo 4: 150 Paneles (Tier 3)
+- 150 paneles × $400 = $60,000 USD
+- Precio uniforme: $400/panel
 
 ## 🔄 Flujo de Cálculo Completo
 
@@ -98,22 +87,25 @@ bill_coverage_achieved = (monthly_savings_ars / monthly_bill_ars) * 100
 
 ## 📈 Impacto en Resultados
 
-### Comparación con Tiers Anteriores (1-9: $700, 10-49: $500, 50+: $400)
+### Comparación: Sistema Escalonado vs Sistema Uniforme
 
-| Paneles | Tiers Antiguos | Tiers Nuevos | Diferencia | % Cambio |
-|---------|---------------|--------------|------------|----------|
-| 9       | $6,300        | $6,300       | $0         | 0.0%     |
-| 10      | $6,800        | $6,800       | $0         | 0.0%     |
-| 49      | $26,300       | $26,300      | $0         | 0.0%     |
-| 50      | $26,700       | $26,800      | +$100      | +0.4%    |
-| 75      | $36,700       | $39,300      | +$2,600    | +7.1%    |
-| 99      | $46,300       | $51,300      | +$5,000    | +10.8%   |
-| 100     | $46,700       | $51,700      | +$5,000    | +10.7%   |
-| 150     | $66,700       | $71,700      | +$5,000    | +7.5%    |
-| 200     | $86,700       | $91,700      | +$5,000    | +5.8%    |
+| Paneles | Sistema Escalonado (Anterior) | Sistema Uniforme (Actual) | Diferencia | % Cambio |
+|---------|------------------------------|---------------------------|------------|----------|
+| 9       | $6,300                       | $6,300                    | $0         | 0.0%     |
+| 10      | $6,800                       | $5,000                    | -$1,800    | -26.5%   |
+| 12      | $7,800                       | $6,000                    | -$1,800    | -23.1%   |
+| 25      | $14,300                      | $12,500                   | -$1,800    | -12.6%   |
+| 50      | $26,800                      | $25,000                   | -$1,800    | -6.7%    |
+| 75      | $39,300                      | $37,500                   | -$1,800    | -4.6%    |
+| 99      | $51,300                      | $49,500                   | -$1,800    | -3.5%    |
+| 100     | $51,700                      | $40,000                   | -$11,700   | -22.6%   |
+| 150     | $71,700                      | $60,000                   | -$11,700   | -16.3%   |
+| 200     | $91,700                      | $80,000                   | -$11,700   | -12.8%   |
 
 ### Observaciones:
-- **Proyectos pequeños (1-49 paneles)**: Sin cambios
+- **Proyectos 10-99 paneles**: Precio reducido significativamente (todos a $500)
+- **Proyectos 100+ paneles**: Precio mucho más competitivo (todos a $400)
+- **Sistema más simple**: Precio uniforme elimina complejidad de cálculo escalonado
 - **Proyectos medianos (50-99 paneles)**: Incremento moderado en costo
 - **Proyectos grandes (100+ paneles)**: Incremento fijo de $5,000 USD
 - **Nuevo punto de equilibrio**: Aproximadamente 99-100 paneles
