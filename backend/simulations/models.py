@@ -4,7 +4,7 @@ from projects.models import SolarProject
 import uuid
 
 # Fixed energy price for savings calculation
-ENERGY_PRICE_ARS_PER_KWH = 102.25  # Updated price in ARS per kWh
+ENERGY_PRICE_ARS_PER_KWH = 101.25  # Updated price in ARS per kWh
 
 
 class TariffCategory(models.Model):
