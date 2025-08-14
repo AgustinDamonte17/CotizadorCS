@@ -7,7 +7,7 @@ Se ha implementado una nueva fórmula de cálculo de ahorros mensuales que simpl
 ## 💰 Nueva Configuración
 
 ### Precio de Energía
-- **Precio fijo**: $102.25 ARS/kWh (anteriormente $0.06 USD/kWh × tipo de cambio)
+- **Precio fijo**: $101.25 ARS/kWh (actualizado desde $102.25 ARS/kWh)
 
 ### Nueva Fórmula de Ahorros
 ```
@@ -17,14 +17,14 @@ Ahorro Mensual (ARS) = cant_paneles × 0.66 × precio_energia × 24 × 30 × 0.1
 **Donde:**
 - `cant_paneles`: Número de paneles instalados
 - `0.66`: Factor de eficiencia del panel
-- `precio_energia`: $102.25 ARS/kWh (precio fijo)
+- `precio_energia`: $101.25 ARS/kWh (precio fijo)
 - `24`: Horas por día
 - `30`: Días por mes
 - `0.19`: Factor de performance del sistema
 
 ### Factor Simplificado
 ```
-Ahorro por Panel = 0.66 × 102.25 × 24 × 30 × 0.19 = $9,231.95 ARS/mes/panel
+Ahorro por Panel = 0.66 × 101.25 × 24 × 30 × 0.19 = $9,145.80 ARS/mes/panel
 ```
 
 ## 🔄 Implementación Técnica
@@ -36,7 +36,7 @@ def _calculate_monthly_savings(self, number_of_panels: int) -> Decimal:
     Calculate monthly savings based on new formula:
     Ahorro Mensual (ARS) = cant_paneles × 0.66 × precio_energia × 24 × 30 × 0.19
     """
-    energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))  # 102.25
+    energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))  # 101.25
     
     monthly_savings_ars = (
         Decimal(str(number_of_panels)) * 
@@ -56,24 +56,24 @@ def _calculate_monthly_savings(self, number_of_panels: int) -> Decimal:
 ENERGY_PRICE_USD_PER_KWH = 0.06
 
 # Ahora
-ENERGY_PRICE_ARS_PER_KWH = 102.25  # Updated price in ARS per kWh
+ENERGY_PRICE_ARS_PER_KWH = 101.25  # Updated price in ARS per kWh
 ```
 
 ## 📊 Ejemplos de Cálculo
 
 ### Ejemplo 1: 5 Paneles
 ```
-5 × 0.66 × 102.25 × 24 × 30 × 0.19 = $46,159.74 ARS/mes
+5 × 0.66 × 101.25 × 24 × 30 × 0.19 = $45,729.00 ARS/mes
 ```
 
 ### Ejemplo 2: 25 Paneles
 ```
-25 × 0.66 × 102.25 × 24 × 30 × 0.19 = $230,798.70 ARS/mes
+25 × 0.66 × 101.25 × 24 × 30 × 0.19 = $228,645.00 ARS/mes
 ```
 
 ### Ejemplo 3: 100 Paneles
 ```
-100 × 0.66 × 102.25 × 24 × 30 × 0.19 = $923,194.80 ARS/mes
+100 × 0.66 × 101.25 × 24 × 30 × 0.19 = $914,580.00 ARS/mes
 ```
 
 ## 📈 Impacto en Resultados

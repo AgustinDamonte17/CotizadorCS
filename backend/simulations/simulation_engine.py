@@ -35,39 +35,35 @@ class SolarInvestmentCalculator:
     ) -> InvestmentSimulation:
         """
         Simulate investment based on desired bill coverage percentage
+        Using new formulas:
+        - energia_generada = monto_factura_total / precio_energia  
+        - potencia = energia_generada / 24 / 0.19 / 30
+        - paneles = potencia / 0.66
         """
         # Calculate target monthly savings in ARS
         target_monthly_savings_ars = monthly_bill_ars * (bill_coverage_percentage / 100)
         
-        # Calculate required monthly generation in kWh
-        # Savings = Generation (kWh) * Energy Price (USD/kWh) * Exchange Rate (ARS/USD)
-        required_monthly_generation_kwh = target_monthly_savings_ars / (
-            Decimal(str(ENERGY_PRICE_USD_PER_KWH)) * self.exchange_rate
-        )
+        # Nueva fórmula: energía_generada = monto_factura_total / precio_energia
+        # target_monthly_savings_ars es el equivalente al "monto de factura" que queremos cubrir
+        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        required_monthly_generation_kwh = target_monthly_savings_ars / energy_price_ars
         
-        # Calculate required annual generation
-        required_annual_generation = required_monthly_generation_kwh * 12
+        # Nueva fórmula: potencia = energia_generada / 24 / 0.19 / 30
+        required_power_kw = required_monthly_generation_kwh / Decimal('24') / Decimal('0.19') / Decimal('30')
         
-        # Calculate required system size
-        required_power_kw = required_annual_generation / (
-            self.annual_generation_factor * self.performance_ratio
-        )
+        # Nueva fórmula: paneles = potencia / 0.66
+        number_of_panels = int((required_power_kw / Decimal('0.66')).to_integral_value(ROUND_HALF_UP))
         
-        # Calculate number of panels
-        panel_power_kw = self.project.panel_power_wp / 1000
-        number_of_panels = int((required_power_kw / panel_power_kw).to_integral_value(ROUND_HALF_UP))
+        # Recalculate actual power based on number of panels calculated
+        # actual_power_kw already calculated above as required_power_kw 
+        actual_power_kw = required_power_kw
         
-        # Recalculate actual power and generation
-        actual_power_kw = number_of_panels * panel_power_kw
-        actual_annual_generation = actual_power_kw * self.annual_generation_factor * self.performance_ratio
-        actual_monthly_generation = actual_annual_generation / 12
+        # Calculate actual generation based on the new formula
+        actual_monthly_generation = required_monthly_generation_kwh
+        actual_annual_generation = actual_monthly_generation * 12
         
-        # Calculate investment
-        total_investment_usd = number_of_panels * self.project.price_per_panel_usd
-        if not self.project.price_per_panel_usd:
-            # Calculate from price per Wp
-            total_investment_usd = actual_power_kw * 1000 * self.project.price_per_wp_usd
-        
+        # Calculate investment using tiered pricing
+        total_investment_usd = self._calculate_total_investment_tiered(number_of_panels)
         total_investment_ars = total_investment_usd * self.exchange_rate
         
         # Calculate savings using new formula (based on number of panels)
