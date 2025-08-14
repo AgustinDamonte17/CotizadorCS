@@ -84,6 +84,22 @@ class SolarProject(models.Model):
         blank=True
     )
     
+    # Access control
+    financial_access_password = models.CharField(
+        'Contraseña de Acceso Financiero', 
+        max_length=50,
+        default='iris2025',
+        help_text='Contraseña requerida para acceder a información financiera y simulador'
+    )
+    
+    # Commercial contact
+    commercial_whatsapp = models.CharField(
+        'WhatsApp Comercial',
+        max_length=20,
+        blank=True,
+        help_text='Número de WhatsApp para contacto comercial (ej: +541112345678)'
+    )
+    
     # Crowdfunding information (for future use)
     funding_goal = models.DecimalField(
         'Meta de Financiamiento (USD)', 

@@ -60,7 +60,7 @@ class SolarProjectDetailSerializer(serializers.ModelSerializer):
             'price_per_wp_usd', 'price_per_panel_usd', 'panel_power_wp',
             'owners', 'expected_annual_generation', 'funding_goal', 
             'funding_raised', 'funding_deadline', 'funding_percentage',
-            'available_power_percentage', 'images', 'videos',
+            'available_power_percentage', 'financial_access_password', 'commercial_whatsapp', 'images', 'videos',
             'created_at', 'updated_at'
         ]
 

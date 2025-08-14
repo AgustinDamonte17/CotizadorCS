@@ -14,6 +14,7 @@ import {
   HiOutlineTrendingUp,
   HiOutlineClock
 } from 'react-icons/hi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { api, apiUtils } from '../services/api';
 import { useAuth } from '../context/AppContext';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
@@ -546,10 +547,80 @@ const SimulationPage = () => {
   );
 };
 
+// Function to create WhatsApp message
+const createWhatsAppMessage = (project, simulation, userEmail, userPhone) => {
+  const formatNumber = (num, decimals = 2) => {
+    if (num === null || num === undefined) return '0';
+    return new Intl.NumberFormat('es-AR', { 
+      minimumFractionDigits: decimals, 
+      maximumFractionDigits: decimals 
+    }).format(num);
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return '$0';
+    return new Intl.NumberFormat('es-AR', { 
+      style: 'currency', 
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const getSimulationTypeLabel = (type) => {
+    const labels = {
+      'bill_coverage': 'Cobertura de Factura',
+      'panels': 'Número de Paneles',
+      'investment': 'Monto de Inversión'
+    };
+    return labels[type] || type;
+  };
+
+  return `🌞 *CONSULTA SIMULACIÓN SOLAR* 🌞
+
+📋 *PARÁMETROS DE SIMULACIÓN*
+• Proyecto: ${project.name}
+• Ubicación: ${project.location}
+• Tipo de simulación: ${getSimulationTypeLabel(simulation.simulation_type)}
+• Factura mensual: ${formatCurrency(simulation.monthly_bill_ars)}
+${simulation.bill_coverage_percentage ? `• Cobertura deseada: ${formatNumber(simulation.bill_coverage_percentage, 1)}%` : ''}
+${simulation.number_of_panels ? `• Cantidad de paneles: ${simulation.number_of_panels}` : ''}
+${simulation.investment_amount_usd ? `• Monto de inversión: $${formatNumber(simulation.investment_amount_usd)} USD` : ''}
+
+📊 *RESULTADOS DE LA SIMULACIÓN*
+💰 Inversión Total: $${formatNumber(simulation.total_investment_usd)} USD
+⚡ Potencia Instalada: ${formatNumber(simulation.installed_power_kw, 2)} kW
+📈 Generación Mensual: ${formatNumber(simulation.monthly_generation_kwh)} kWh
+💵 Ahorro Mensual: ${formatCurrency(simulation.monthly_savings_ars)}
+💎 Ahorro Anual (USD): $${formatNumber(simulation.annual_savings_usd, 0)}
+📊 ROI Anual: ${formatNumber(simulation.roi_annual, 1)}%
+⏰ Período de Retorno: ${formatNumber(simulation.payback_period_years, 1)} años
+🎯 Cobertura Lograda: ${formatNumber(simulation.bill_coverage_achieved, 1)}%
+
+👤 *DATOS DE CONTACTO*
+📧 Email: ${userEmail}
+📱 Teléfono: +54${userPhone}
+
+Quisiera recibir asesoramiento comercial sobre esta simulación. ¡Gracias! 🙌`;
+};
+
 // Simulation Results Component
 const SimulationResults = ({ result, project }) => {
   const { simulation, capacity_check } = result;
   const navigate = useNavigate();
+
+  const handleWhatsAppContact = () => {
+    if (!project.commercial_whatsapp) {
+      toast.error('No hay número de WhatsApp configurado para este proyecto');
+      return;
+    }
+    
+    const message = createWhatsAppMessage(project, simulation, simulation.user_email, simulation.user_phone);
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://web.whatsapp.com/send?phone=${project.commercial_whatsapp}&text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
 
   return (
     <motion.div
@@ -738,19 +809,31 @@ const SimulationResults = ({ result, project }) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <Link
-            to="/mis-simulaciones"
-            className="btn btn-outline flex-1"
-          >
-            Ver Mis Simulaciones
-          </Link>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary flex-1"
-          >
-            Nueva Simulación
-          </button>
+        <div className="space-y-4 mt-8">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link
+              to="/mis-simulaciones"
+              className="btn btn-outline flex-1"
+            >
+              Ver Mis Simulaciones
+            </Link>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn btn-primary flex-1"
+            >
+              Nueva Simulación
+            </button>
+          </div>
+          
+          {project.commercial_whatsapp && (
+            <button
+              onClick={handleWhatsAppContact}
+              className="btn w-full text-white bg-green-500 hover:bg-green-600 border-green-500 hover:border-green-600 transition-colors flex items-center justify-center"
+            >
+              <FaWhatsapp className="w-6 h-6 mr-2" />
+              Asesor Comercial
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
