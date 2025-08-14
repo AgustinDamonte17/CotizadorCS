@@ -8,6 +8,7 @@ urlpatterns = [
     path('tariff-categories/', views.TariffCategoryListView.as_view(), name='tariff-categories'),
     path('exchange-rates/', views.ExchangeRateListView.as_view(), name='exchange-rates'),
     path('exchange-rate/current/', views.current_exchange_rate_view, name='current-exchange-rate'),
+    path('calculate-limits/', views.calculate_limits_view, name='calculate-limits'),
     
     # Simulation endpoints
     path('simulations/create/', views.create_simulation_view, name='create-simulation'),

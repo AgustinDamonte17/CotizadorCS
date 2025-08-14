@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from 'react-query';
@@ -26,6 +26,8 @@ const SimulationPage = () => {
   const { userEmail, setUserEmail } = useAuth();
   const [simulationResult, setSimulationResult] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [limits, setLimits] = useState(null);
+  const [limitsLoading, setLimitsLoading] = useState(false);
 
   // Fetch project details
   const { data: project, isLoading: projectLoading, error } = useQuery(
@@ -57,6 +59,7 @@ const SimulationPage = () => {
   const billCoveragePercentage = watch('bill_coverage_percentage');
   const monthlyBill = watch('monthly_bill_ars');
   const investmentAmount = watch('investment_amount_usd');
+  const tariffCategoryId = watch('tariff_category_id');
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
@@ -71,6 +74,38 @@ const SimulationPage = () => {
       setValue('number_of_panels', '');
     }
   }, [simulationType, setValue]);
+
+  // Calculate limits based on monthly bill
+  useEffect(() => {
+    const calculateLimits = async () => {
+      if (!monthlyBill || !project || !tariffCategoryId) {
+        setLimits(null);
+        return;
+      }
+
+      if (monthlyBill <= 0) {
+        setLimits(null);
+        return;
+      }
+
+      setLimitsLoading(true);
+      try {
+        const response = await api.calculateLimits({
+          monthly_bill_ars: monthlyBill,
+          project_id: project.id,
+          tariff_category_id: tariffCategoryId
+        });
+        setLimits(response.data);
+      } catch (error) {
+        console.error('Error calculating limits:', error);
+        setLimits(null);
+      } finally {
+        setLimitsLoading(false);
+      }
+    };
+
+    calculateLimits();
+  }, [monthlyBill, project, tariffCategoryId]);
 
   // Calculate suggested maximum panels based on project availability
   const maxAvailablePanels = React.useMemo(() => {
@@ -409,6 +444,61 @@ const SimulationPage = () => {
                     {errors.investment_amount_usd && (
                       <p className="form-error">{errors.investment_amount_usd.message}</p>
                     )}
+                  </div>
+                )}
+
+                {/* Investment and Panel Limits */}
+                {limits && (
+                  <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                      <HiOutlineInformationCircle className="w-5 h-5 mr-2 text-blue-500" />
+                      Límites Máximos (100% Cobertura)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Inversión máxima:</span>
+                          <span className="font-medium text-green-700">
+                            ${apiUtils.formatNumber(limits.max_investment_usd, 0)} USD
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">En pesos:</span>
+                          <span className="font-medium text-gray-700">
+                            ${apiUtils.formatNumber(limits.max_investment_ars, 0)} ARS
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Paneles máximos:</span>
+                          <span className="font-medium text-green-700">
+                            {limits.max_panels_allowed} paneles
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Cobertura:</span>
+                          <span className="font-medium text-gray-700">
+                            100% de la factura
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Período máximo de retorno: {limits.max_payback_years} años</span>
+                        <span>Ahorro por panel: ${apiUtils.formatNumber(limits.savings_per_panel_ars, 0)} ARS/mes</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {limitsLoading && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <LoadingSpinner size="small" />
+                      <span>Calculando límites...</span>
+                    </div>
                   </div>
                 )}
 

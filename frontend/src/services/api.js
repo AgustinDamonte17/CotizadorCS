@@ -87,6 +87,10 @@ export const api = {
     return apiClient.get('/exchange-rate/current/');
   },
   
+  calculateLimits: (data) => {
+    return apiClient.post('/calculate-limits/', data);
+  },
+  
   // Core endpoints
   getSiteSettings: () => {
     return apiClient.get('/settings/');

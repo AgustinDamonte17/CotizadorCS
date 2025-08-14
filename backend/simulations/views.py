@@ -3,7 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from decimal import Decimal
 from .models import InvestmentSimulation, TariffCategory, ExchangeRate
+from projects.models import SolarProject
 from .serializers import (
     InvestmentSimulationSerializer,
     SimulationInputSerializer,
@@ -46,6 +48,73 @@ def current_exchange_rate_view(request):
     except Exception as e:
         return Response(
             {'error': 'Error al obtener el tipo de cambio'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+def calculate_limits_view(request):
+    """
+    API view to calculate maximum investment and panels based on monthly bill
+    """
+    try:
+        monthly_bill_ars = request.data.get('monthly_bill_ars')
+        project_id = request.data.get('project_id')
+        tariff_category_id = request.data.get('tariff_category_id')
+        
+        if not all([monthly_bill_ars, project_id, tariff_category_id]):
+            return Response(
+                {'error': 'monthly_bill_ars, project_id y tariff_category_id son requeridos'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate and get objects
+        try:
+            monthly_bill_ars = Decimal(str(monthly_bill_ars))
+            if monthly_bill_ars <= 0:
+                raise ValueError("monthly_bill_ars debe ser mayor a 0")
+        except (ValueError, TypeError) as e:
+            return Response(
+                {'error': 'monthly_bill_ars debe ser un número válido mayor a 0'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            project = SolarProject.objects.get(id=project_id)
+            tariff_category = TariffCategory.objects.get(id=tariff_category_id)
+        except (SolarProject.DoesNotExist, TariffCategory.DoesNotExist):
+            return Response(
+                {'error': 'Proyecto o categoría tarifaria no encontrados'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Initialize calculator and calculate limits
+        from .simulation_engine import SolarInvestmentCalculator
+        calculator = SolarInvestmentCalculator(project, tariff_category)
+        limits = calculator._calculate_bill_based_limits(monthly_bill_ars)
+        
+        # Calculate max investment based on 100% coverage
+        max_panels_100_coverage = limits['max_panels_for_bill_coverage']
+        max_investment_usd_100_coverage = calculator._calculate_total_investment_tiered(max_panels_100_coverage)
+        max_investment_ars_100_coverage = max_investment_usd_100_coverage * calculator.exchange_rate
+        
+        # Format response
+        response_data = {
+            'monthly_bill_ars': float(monthly_bill_ars),
+            'max_investment_usd': float(max_investment_usd_100_coverage),
+            'max_investment_ars': float(max_investment_ars_100_coverage),
+            'max_panels_100_coverage': limits['max_panels_for_bill_coverage'],
+            'max_panels_allowed': limits['max_panels_for_bill_coverage'],  # Same as 100% coverage
+            'savings_per_panel_ars': float(limits['savings_per_panel_ars']),
+            'max_payback_years': limits['max_payback_years'],
+            'exchange_rate_used': float(calculator.exchange_rate)
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Error al calcular límites: {str(e)}'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
