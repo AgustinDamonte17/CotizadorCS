@@ -5,14 +5,13 @@ import { useQuery, useMutation } from 'react-query';
 import { useForm } from 'react-hook-form';
 import { 
   HiOutlineLocationMarker,
-  HiOutlineLightningBolt,
   HiOutlineCurrencyDollar,
   HiOutlineCalculator,
   HiOutlineChartBar,
   HiOutlineArrowLeft,
-  HiOutlineCheckCircle,
   HiOutlineInformationCircle
 } from 'react-icons/hi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { api, apiUtils } from '../services/api';
 import { useAuth } from '../context/AppContext';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
@@ -22,7 +21,10 @@ const ProjectDetailPage = () => {
   const { id } = useParams();
   const { userEmail, setUserEmail } = useAuth();
   const [simulationResult, setSimulationResult] = useState(null);
-  const [showSimulator, setShowSimulator] = useState(false);
+  const [showSimulator] = useState(false);
+  const [isFinancialUnlocked, setIsFinancialUnlocked] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
   
   // Fetch project details
   const { data: project, isLoading, error } = useQuery(
@@ -51,7 +53,16 @@ const ProjectDetailPage = () => {
   });
   
   const simulationType = watch('simulation_type');
-  const monthlyBill = watch('monthly_bill_ars');
+
+  // Check if financial access is unlocked on component mount
+  React.useEffect(() => {
+    if (project) {
+      const unlocked = localStorage.getItem(`financialAccessUnlocked_${project.id}`);
+      if (unlocked === 'true') {
+        setIsFinancialUnlocked(true);
+      }
+    }
+  }, [project]);
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
@@ -94,6 +105,23 @@ const ProjectDetailPage = () => {
     },
   });
   
+  // Handle password submission
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    const correctPassword = project.financial_access_password; // Contraseña específica del proyecto
+    
+    if (passwordInput === correctPassword) {
+      setIsFinancialUnlocked(true);
+      setShowPasswordModal(false);
+      setPasswordInput('');
+      localStorage.setItem(`financialAccessUnlocked_${project.id}`, 'true');
+      toast.success('¡Acceso concedido! Ahora puedes ver la información financiera.');
+    } else {
+      toast.error('Contraseña incorrecta. Intenta nuevamente.');
+      setPasswordInput('');
+    }
+  };
+
   const onSubmit = (data) => {
     const payload = {
       project_id: parseInt(id),
@@ -269,43 +297,94 @@ const ProjectDetailPage = () => {
             </div>
             
             {/* Financial Information */}
-            <div className="card p-6">
+            <div className="card p-6 relative">
               <h2 className="text-xl font-semibold mb-4">Información Financiera</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">Precio por Wp</label>
-                  <p className="text-lg font-semibold text-gray-900">
-                    ${apiUtils.formatNumber(project.price_per_wp_usd, 2)} USD
-                  </p>
-                </div>
-                
-                {project.price_per_panel_usd && (
+              
+              {isFinancialUnlocked ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Precio por Panel</label>
+                    <label className="text-sm font-medium text-gray-600">Precio por Wp</label>
                     <p className="text-lg font-semibold text-gray-900">
-                      ${apiUtils.formatNumber(project.price_per_panel_usd)} USD
+                      ${apiUtils.formatNumber(project.price_per_wp_usd, 2)} USD
                     </p>
                   </div>
-                )}
-                
-                {project.funding_goal && (
-                  <>
+                  
+                  {project.price_per_panel_usd && (
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Meta de Financiamiento</label>
+                      <label className="text-sm font-medium text-gray-600">Precio por Panel</label>
                       <p className="text-lg font-semibold text-gray-900">
-                        ${apiUtils.formatNumber(project.funding_goal)} USD
+                        ${apiUtils.formatNumber(project.price_per_panel_usd)} USD
                       </p>
                     </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Financiamiento Recaudado</label>
-                      <p className="text-lg font-semibold text-primary-600">
-                        {apiUtils.formatNumber(project.funding_percentage, 1)}%
-                      </p>
+                  )}
+                  
+                  {project.funding_goal && (
+                    <>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Meta de Financiamiento</label>
+                        <p className="text-lg font-semibold text-gray-900">
+                          ${apiUtils.formatNumber(project.funding_goal)} USD
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Financiamiento Recaudado</label>
+                        <p className="text-lg font-semibold text-primary-600">
+                          {apiUtils.formatNumber(project.funding_percentage, 1)}%
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="relative">
+                  {/* Blurred Content */}
+                  <div className="filter blur-sm pointer-events-none select-none">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Precio por Wp</label>
+                        <p className="text-lg font-semibold text-gray-900">
+                          $XX.XX USD
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Precio por Panel</label>
+                        <p className="text-lg font-semibold text-gray-900">
+                          $XXX USD
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Meta de Financiamiento</label>
+                        <p className="text-lg font-semibold text-gray-900">
+                          $XXX,XXX USD
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Financiamiento Recaudado</label>
+                        <p className="text-lg font-semibold text-primary-600">
+                          XX.X%
+                        </p>
+                      </div>
                     </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                  
+                  {/* Unlock Button Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                    <div className="text-center">
+                      <HiOutlineCurrencyDollar className="w-12 h-12 text-primary-600 mx-auto mb-4" />
+                      <p className="text-gray-700 mb-4 max-w-xs">
+                        La información financiera está protegida. Ingresa la contraseña brindada por tu Cooperativa para acceder.
+                      </p>
+                      <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="btn btn-primary"
+                      >
+                        Acceder a Información Financiera
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Project Owners */}
@@ -319,13 +398,15 @@ const ProjectDetailPage = () => {
           
           {/* Investment Simulator */}
           <div className="lg:col-span-1">
-            <div className="card p-6 sticky top-8">
+            <div className="card p-6 sticky top-8 relative">
               <div className="flex items-center space-x-2 mb-4">
                 <HiOutlineCalculator className="w-6 h-6 text-primary-600" />
                 <h2 className="text-xl font-semibold">Simulador de Inversión</h2>
               </div>
               
-              {!showSimulator ? (
+              {isFinancialUnlocked ? (
+                <>
+                  {!showSimulator ? (
                 <div className="text-center">
                   <p className="text-gray-600 mb-4">
                     Calcula el retorno de tu inversión en este proyecto
@@ -531,20 +612,197 @@ const ProjectDetailPage = () => {
               {simulationResult && (
                 <SimulationResults 
                   result={simulationResult} 
-                  onReset={() => setSimulationResult(null)} 
+                  onReset={() => setSimulationResult(null)}
+                  project={project}
                 />
+              )}
+                </>
+              ) : (
+                <div className="relative">
+                  {/* Blurred Content */}
+                  <div className="filter blur-sm pointer-events-none select-none">
+                    <div className="text-center mb-6">
+                      <p className="text-gray-600 mb-4">
+                        Calcula el retorno de tu inversión en este proyecto
+                      </p>
+                      <div className="btn btn-primary w-full">
+                        Simular Inversión
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="form-label">Email *</label>
+                        <div className="input bg-gray-100">usuario@email.com</div>
+                      </div>
+                      <div>
+                        <label className="form-label">Teléfono *</label>
+                        <div className="input bg-gray-100">+54 11 XXXX-XXXX</div>
+                      </div>
+                      <div>
+                        <label className="form-label">Factura Mensual *</label>
+                        <div className="input bg-gray-100">$XX,XXX ARS</div>
+                      </div>
+                      <div>
+                        <label className="form-label">Categoría Tarifaria *</label>
+                        <div className="input bg-gray-100">Seleccionar...</div>
+                      </div>
+                      <div className="btn btn-primary w-full bg-gray-300">
+                        Calcular Simulación
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Unlock Button Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                    <div className="text-center">
+                      <HiOutlineCalculator className="w-12 h-12 text-primary-600 mx-auto mb-4" />
+                      <p className="text-gray-700 mb-4 max-w-xs">
+                        El simulador de inversión está protegido. Ingresa la contraseña brindada por tu Cooperativa para acceder.
+                      </p>
+                      <button
+                        onClick={() => setShowPasswordModal(true)}
+                        className="btn btn-primary"
+                      >
+                        Habilitar Simulador
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </div>
+        
+        {/* Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Acceso a Información Financiera</h3>
+              <p className="text-gray-600 mb-4">
+                Ingresa la contraseña brindada por tu Cooperativa para acceder a la información financiera y el simulador de inversión.
+              </p>
+              
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="mb-4">
+                  <label className="form-label">Contraseña</label>
+                  <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="input w-full"
+                    placeholder="Ingresa la contraseña"
+                    autoFocus
+                  />
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setPasswordInput('');
+                    }}
+                    className="btn btn-outline flex-1"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary flex-1"
+                  >
+                    Acceder
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
+// Function to create WhatsApp message
+const createWhatsAppMessage = (project, simulation, userEmail, userPhone) => {
+  const formatNumber = (num, decimals = 2) => {
+    if (num === null || num === undefined) return '0';
+    return new Intl.NumberFormat('es-AR', { 
+      minimumFractionDigits: decimals, 
+      maximumFractionDigits: decimals 
+    }).format(num);
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return '$0';
+    return new Intl.NumberFormat('es-AR', { 
+      style: 'currency', 
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const getSimulationTypeLabel = (type) => {
+    const labels = {
+      'bill_coverage': 'Cobertura de Factura',
+      'panels': 'Número de Paneles',
+      'investment': 'Monto de Inversión'
+    };
+    return labels[type] || type;
+  };
+
+  return `🌞 *CONSULTA SIMULACIÓN SOLAR* 🌞
+
+📋 *PARÁMETROS DE SIMULACIÓN*
+• Proyecto: ${project.name}
+• Ubicación: ${project.location}
+• Tipo de simulación: ${getSimulationTypeLabel(simulation.simulation_type)}
+• Factura mensual: ${formatCurrency(simulation.monthly_bill_ars)}
+${simulation.bill_coverage_percentage ? `• Cobertura deseada: ${formatNumber(simulation.bill_coverage_percentage, 1)}%` : ''}
+${simulation.number_of_panels ? `• Cantidad de paneles: ${simulation.number_of_panels}` : ''}
+${simulation.investment_amount_usd ? `• Monto de inversión: $${formatNumber(simulation.investment_amount_usd)} USD` : ''}
+
+📊 *RESULTADOS DE LA SIMULACIÓN*
+💰 Inversión Total: $${formatNumber(simulation.total_investment_usd)} USD
+⚡ Potencia Instalada: ${formatNumber(simulation.installed_power_kw, 2)} kW
+📈 Generación Mensual: ${formatNumber(simulation.monthly_generation_kwh)} kWh
+💵 Ahorro Mensual: ${formatCurrency(simulation.monthly_savings_ars)}
+💎 Ahorro Anual (USD): $${formatNumber(simulation.annual_savings_usd, 0)}
+📊 ROI Anual: ${formatNumber(simulation.roi_annual, 1)}%
+⏰ Período de Retorno: ${formatNumber(simulation.payback_period_years, 1)} años
+🎯 Cobertura Lograda: ${formatNumber(simulation.bill_coverage_achieved, 1)}%
+
+👤 *DATOS DE CONTACTO*
+📧 Email: ${userEmail}
+📱 Teléfono: +54${userPhone}
+
+Quisiera recibir asesoramiento comercial sobre esta simulación. ¡Gracias! 🙌`;
+};
+
 // Simulation Results Component
-const SimulationResults = ({ result, onReset }) => {
+const SimulationResults = ({ result, onReset, project }) => {
   const { simulation, capacity_check } = result;
+  
+  // Debug: Check if WhatsApp number is available
+  console.log('🔍 DEBUG - SimulationResults rendered');
+  console.log('🔍 Project data:', project);
+  console.log('🔍 Project WhatsApp:', project.commercial_whatsapp);
+  console.log('🔍 Should show button:', !!project.commercial_whatsapp);
+  console.log('🔍 Project keys:', Object.keys(project));
+  
+  const handleWhatsAppContact = () => {
+    if (!project.commercial_whatsapp) {
+      toast.error('No hay número de WhatsApp configurado para este proyecto');
+      return;
+    }
+    
+    const message = createWhatsAppMessage(project, simulation, simulation.user_email, simulation.user_phone);
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://web.whatsapp.com/send?phone=${project.commercial_whatsapp}&text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
   
   return (
     <motion.div
@@ -634,14 +892,52 @@ const SimulationResults = ({ result, onReset }) => {
         </div>
       </div>
       
-      <div className="mt-4 pt-4 border-t border-primary-200">
-        <Link
-          to="/mis-simulaciones"
-          className="btn btn-outline w-full text-sm"
+      <div className="mt-4 pt-4 border-t border-primary-200 space-y-3">
+        <div className="flex space-x-2">
+          <Link
+            to="/mis-simulaciones"
+            className="btn btn-outline flex-1 text-sm"
+          >
+            <HiOutlineChartBar className="w-4 h-4 mr-2" />
+            Ver Todas mis Simulaciones
+          </Link>
+          <button
+            onClick={onReset}
+            className="btn btn-outline flex-1 text-sm"
+          >
+            Nueva Simulación
+          </button>
+        </div>
+        
+        {project.commercial_whatsapp && (
+          <button
+            onClick={handleWhatsAppContact}
+            className="btn w-full text-sm text-white bg-green-500 hover:bg-green-600 border-green-500 hover:border-green-600 transition-colors flex items-center justify-center"
+          >
+            <FaWhatsapp className="w-5 h-5 mr-2" />
+            Asesor Comercial
+          </button>
+        )}
+        
+        {/* Debug: Always show this button for testing */}
+        <button
+          onClick={() => {
+            console.log('🔧 Debug button clicked');
+            console.log('🔧 project.commercial_whatsapp:', project.commercial_whatsapp);
+            console.log('🔧 Boolean check:', !!project.commercial_whatsapp);
+          }}
+          className="btn w-full text-sm bg-red-500 text-white"
         >
-          <HiOutlineChartBar className="w-4 h-4 mr-2" />
-          Ver Todas mis Simulaciones
-        </Link>
+          🔧 DEBUG: WhatsApp = {project.commercial_whatsapp || 'undefined'}
+        </button>
+        
+        {/* Debug: Show conditional result */}
+        <div className="text-xs bg-yellow-100 p-2 rounded">
+          <strong>DEBUG INFO:</strong><br/>
+          WhatsApp: {project.commercial_whatsapp || 'NO VALUE'}<br/>
+          Show button: {project.commercial_whatsapp ? 'YES' : 'NO'}<br/>
+          Type: {typeof project.commercial_whatsapp}
+        </div>
       </div>
     </motion.div>
   );

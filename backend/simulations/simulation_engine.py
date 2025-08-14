@@ -62,11 +62,8 @@ class SolarInvestmentCalculator:
         actual_annual_generation = actual_power_kw * self.annual_generation_factor * self.performance_ratio
         actual_monthly_generation = actual_annual_generation / 12
         
-        # Calculate investment
-        total_investment_usd = number_of_panels * self.project.price_per_panel_usd
-        if not self.project.price_per_panel_usd:
-            # Calculate from price per Wp
-            total_investment_usd = actual_power_kw * 1000 * self.project.price_per_wp_usd
+        # Calculate investment using tiered pricing
+        total_investment_usd = self._calculate_total_investment_tiered(number_of_panels)
         
         total_investment_ars = total_investment_usd * self.exchange_rate
         
