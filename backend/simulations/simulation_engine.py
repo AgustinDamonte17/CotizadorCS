@@ -116,7 +116,13 @@ class SolarInvestmentCalculator:
         - 1-9 panels: $700 USD per panel
         - 10-99 panels: $500 USD per panel  
         - 100+ panels: $400 USD per panel
+        
+        Applies bill-based restrictions to prevent excessive installations.
         """
+        # Apply bill-based restrictions to number of panels
+        original_panels = number_of_panels
+        number_of_panels = self._apply_bill_restrictions(number_of_panels, monthly_bill_ars)
+        
         # Calculate system specifications
         panel_power_kw = self.project.panel_power_wp / 1000
         actual_power_kw = number_of_panels * panel_power_kw
@@ -173,7 +179,19 @@ class SolarInvestmentCalculator:
     ) -> InvestmentSimulation:
         """
         Simulate investment based on investment amount
+        Applies bill-based restrictions to prevent excessive investments.
         """
+        # Check investment limits based on bill (100% coverage limit)
+        limits = self._calculate_bill_based_limits(monthly_bill_ars)
+        max_panels_100_coverage = limits['max_panels_for_bill_coverage']
+        
+        # Calculate maximum investment based on 100% coverage
+        max_investment_usd_100_coverage = self._calculate_total_investment_tiered(max_panels_100_coverage)
+        
+        # Apply investment restriction to 100% coverage limit
+        original_investment = investment_amount_usd
+        investment_amount_usd = min(investment_amount_usd, max_investment_usd_100_coverage)
+        
         # Calculate number of panels from investment
         if self.project.price_per_panel_usd:
             number_of_panels = int((investment_amount_usd / self.project.price_per_panel_usd).to_integral_value())
@@ -182,15 +200,12 @@ class SolarInvestmentCalculator:
             total_watts = investment_amount_usd / self.project.price_per_wp_usd
             number_of_panels = int((total_watts / self.project.panel_power_wp).to_integral_value())
         
-        # Recalculate actual investment based on whole panels
+        # Recalculate actual investment based on whole panels using tiered pricing
         panel_power_kw = self.project.panel_power_wp / 1000
         actual_power_kw = number_of_panels * panel_power_kw
         
-        if self.project.price_per_panel_usd:
-            actual_investment_usd = number_of_panels * self.project.price_per_panel_usd
-        else:
-            actual_investment_usd = actual_power_kw * 1000 * self.project.price_per_wp_usd
-        
+        # Use tiered pricing system
+        actual_investment_usd = self._calculate_total_investment_tiered(number_of_panels)
         actual_investment_ars = actual_investment_usd * self.exchange_rate
         
         # Calculate generation
@@ -305,3 +320,52 @@ class SolarInvestmentCalculator:
             'available_power_kw': float(available_power_kw),
             'utilization_percentage': float((required_power_kw / available_power_kw) * 100) if available_power_kw > 0 else 0
         }
+    
+    def _calculate_bill_based_limits(self, monthly_bill_ars: Decimal) -> Dict[str, Any]:
+        """
+        Calculate maximum investment and panels based on monthly bill
+        The investment should not exceed what can be recovered through bill savings
+        """
+        # Calculate maximum reasonable payback period (e.g., 10 years)
+        max_payback_years = 10
+        max_total_savings = monthly_bill_ars * 12 * max_payback_years  # 10 years of bills
+        
+        # Convert to USD for investment comparison
+        max_investment_ars = max_total_savings
+        max_investment_usd = max_investment_ars / self.exchange_rate
+        
+        # Calculate maximum panels based on what would generate savings equal to the bill
+        # For 100% coverage, we need panels that generate monthly_bill_ars in savings
+        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        
+        # Use the new coverage formula in reverse
+        # monthly_bill_ars = number_of_panels * ahorro_por_panel
+        # ahorro_por_panel = 0.66 × 101.25 × 24 × 30 × 0.19 = 9,141.66
+        ahorro_por_panel = (
+            Decimal('0.66') * 
+            energy_price_ars * 
+            Decimal('24') * 
+            Decimal('30') * 
+            Decimal('0.19')
+        )
+        
+        max_panels_for_bill = int((monthly_bill_ars / ahorro_por_panel).to_integral_value())
+        
+        return {
+            'max_investment_usd': max_investment_usd,
+            'max_investment_ars': max_investment_ars,
+            'max_panels_for_bill_coverage': max_panels_for_bill,
+            'max_payback_years': max_payback_years,
+            'savings_per_panel_ars': ahorro_por_panel
+        }
+    
+    def _apply_bill_restrictions(self, number_of_panels: int, monthly_bill_ars: Decimal) -> int:
+        """
+        Apply bill-based restrictions to limit number of panels
+        Maximum = exactly what's needed for 100% bill coverage (factura total = ahorro mensual)
+        """
+        limits = self._calculate_bill_based_limits(monthly_bill_ars)
+        max_panels = limits['max_panels_for_bill_coverage']
+        
+        # Limit to exactly 100% coverage: factura_total = ahorro_mensual_ars
+        return min(number_of_panels, max_panels)
