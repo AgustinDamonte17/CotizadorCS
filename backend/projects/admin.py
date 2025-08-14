@@ -40,6 +40,14 @@ class SolarProjectAdmin(admin.ModelAdmin):
                 'funding_goal', 'funding_raised', 'funding_deadline', 'funding_percentage'
             ]
         }),
+        ('Control de Acceso', {
+            'fields': ['financial_access_password'],
+            'description': 'Contraseña requerida para acceder a la información financiera y simulador de inversión.'
+        }),
+        ('Contacto Comercial', {
+            'fields': ['commercial_whatsapp'],
+            'description': 'Número de WhatsApp para contacto comercial y asesoramiento.'
+        }),
         ('Metadatos', {
             'fields': ['created_at', 'updated_at'],
             'classes': ['collapse']
