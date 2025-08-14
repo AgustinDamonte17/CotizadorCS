@@ -59,18 +59,25 @@ def create_tariff_categories():
 
 
 def create_exchange_rates():
-    """Create sample exchange rates"""
+    """Create sample exchange rates only if none exist"""
     print("Creating exchange rates...")
     
-    # Create rates for the last 30 days
-    base_rate = Decimal('350.00')
+    # Check if exchange rates already exist
+    existing_count = ExchangeRate.objects.count()
+    if existing_count > 0:
+        print(f"  ⚠️  Exchange rates already exist ({existing_count} records)")
+        print("  → Skipping creation to preserve existing rates")
+        return
+    
+    # Create rates for the last 30 days using current blue dollar rate
+    base_rate = Decimal('1330.00')  # Updated to blue dollar rate
     today = date.today()
     
     for i in range(30):
         rate_date = today - timedelta(days=i)
-        # Add some variation to the rate
+        # Add some variation to the rate (±10 ARS)
         variation = (i % 7) - 3  # -3 to +3
-        rate = base_rate + Decimal(str(variation * 2))
+        rate = base_rate + Decimal(str(variation * 3))  # ±9 ARS variation
         
         exchange_rate, created = ExchangeRate.objects.get_or_create(
             date=rate_date,
@@ -79,7 +86,7 @@ def create_exchange_rates():
         )
         
         if created and i < 5:  # Only print first 5
-            print(f"  ✓ Created rate for {rate_date}: {rate}")
+            print(f"  ✓ Created rate for {rate_date}: ${rate} ARS/USD")
 
 
 def create_solar_projects():
