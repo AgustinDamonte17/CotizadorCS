@@ -22,8 +22,6 @@ const ProjectsPage = () => {
     location: '',
     min_power: '',
     max_power: '',
-    min_price: '',
-    max_price: '',
   });
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('-created_at');
@@ -47,8 +45,6 @@ const ProjectsPage = () => {
       location: '',
       min_power: '',
       max_power: '',
-      min_price: '',
-      max_price: '',
     });
     setSearchTerm('');
   };
@@ -65,7 +61,7 @@ const ProjectsPage = () => {
     { value: '-created_at', label: 'Más recientes' },
     { value: 'name', label: 'Nombre A-Z' },
     { value: '-available_power', label: 'Mayor potencia disponible' },
-    { value: 'price_per_wp_usd', label: 'Menor precio por Wp' },
+
   ];
   
   if (isLoading) {
@@ -98,10 +94,10 @@ const ProjectsPage = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-section gradient-text mb-4">
-            Proyectos de Energía Solar
+            Comunidades Solares
           </h1>
           <p className="text-lg text-gray-600">
-            Descubre y invierte en proyectos de energía solar comunitaria verificados
+            Encuentra tu Comunidad Solar: invertí, generá energía y ahorrá.
           </p>
         </div>
         
@@ -115,7 +111,7 @@ const ProjectsPage = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar proyectos por nombre, ubicación..."
+                placeholder="Buscar comunidades solares por nombre, ubicación..."
                 className="input pl-10"
               />
             </div>
@@ -195,30 +191,7 @@ const ProjectsPage = () => {
                     />
                   </div>
                   
-                  {/* Price Range */}
-                  <div>
-                    <label className="form-label">Precio Mín. por Wp (USD)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={filters.min_price}
-                      onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                      placeholder="Ej: 0.50"
-                      className="input"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="form-label">Precio Máx. por Wp (USD)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={filters.max_price}
-                      onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                      placeholder="Ej: 2.00"
-                      className="input"
-                    />
-                  </div>
+
                   
                   {/* Clear Filters */}
                   <div className="flex items-end">
@@ -239,7 +212,7 @@ const ProjectsPage = () => {
         {/* Results Summary */}
         <div className="mb-6">
           <p className="text-gray-600">
-            {projects?.results?.length || 0} proyecto{(projects?.results?.length || 0) !== 1 ? 's' : ''} encontrado{(projects?.results?.length || 0) !== 1 ? 's' : ''}
+            {projects?.results?.length || 0} comunidad{(projects?.results?.length || 0) !== 1 ? 'es solares' : ' solar'} encontrada{(projects?.results?.length || 0) !== 1 ? 's' : ''}
           </p>
         </div>
         
@@ -253,11 +226,11 @@ const ProjectsPage = () => {
         ) : (
           <EmptyState
             icon={HiOutlineLightningBolt}
-            title="No se encontraron proyectos"
-            description="Intenta ajustar tus filtros de búsqueda o explora todos los proyectos disponibles."
+            title="No se encontraron comunidades solares"
+            description="Intenta ajustar tus filtros de búsqueda o explora todas las comunidades solares disponibles."
             action={
               <button onClick={clearFilters} className="btn btn-primary">
-                Ver Todos los Proyectos
+                Ver Todas las Comunidades Solares
               </button>
             }
           />
@@ -342,12 +315,7 @@ const ProjectCard = ({ project, index }) => {
             </span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Precio por Wp</span>
-            <span className="font-medium text-gray-900">
-              ${apiUtils.formatNumber(project.price_per_wp_usd, 2)} USD
-            </span>
-          </div>
+
           
           {project.available_power_percentage && (
             <div className="flex justify-between items-center">
@@ -361,7 +329,7 @@ const ProjectCard = ({ project, index }) => {
         
         {/* Action Button */}
         <Link
-          to={`/proyectos/${project.id}`}
+          to={`/comunidades-solares/${project.id}`}
           className="btn btn-primary w-full flex items-center justify-center space-x-2"
         >
           <HiOutlineEye className="w-4 h-4" />

@@ -8,8 +8,7 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineGlobe,
   HiOutlineShieldCheck,
-  HiOutlineTrendingUp,
-  HiOutlineArrowRight
+  HiOutlineTrendingUp
 } from 'react-icons/hi';
 import { useQuery } from 'react-query';
 import { api, apiUtils } from '../services/api';
@@ -106,18 +105,13 @@ const HomePage = () => {
             </h1>
             
             <p className="text-xl text-gray-100 mb-8 max-w-2xl mx-auto">
-              Conectamos inversores con proyectos de energía solar comunitaria. 
+              Te conectamos con tu Comunidad Solar. 
               Obtén retornos competitivos mientras contribuyes a un planeta más sostenible.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/proyectos" className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4 shadow-lg">
-                Explorar Proyectos
-                <HiOutlineArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-              
-              <Link to="/contacto" className="btn border-2 border-white text-white hover:bg-white hover:text-primary-600 text-lg px-8 py-4">
-                Conocer Más
+            <div className="flex justify-center">
+              <Link to="/comunidades-solares" className="btn border-2 border-white text-white hover:bg-primary-600 hover:border-primary-600 text-lg px-8 py-4">
+                Explorar Comunidades Solares
               </Link>
             </div>
           </motion.div>
@@ -165,7 +159,7 @@ const HomePage = () => {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Nuestra plataforma combina tecnología avanzada, transparencia total y 
-              conocimiento especializado para simular escenarios comparativos que te permitan tomar la mejor decisión..
+              conocimiento especializado para simular escenarios comparativos que te permitan tomar la mejor decisión.
             </p>
           </motion.div>
           
@@ -208,7 +202,7 @@ const HomePage = () => {
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Invertir en energía solar nunca fue tan simple. 
-              Sigue estos pasos para comenzar tu journey hacia la sostenibilidad.
+              Sigue estos pasos para comenzar tu camino hacia la energía limpia.
             </p>
           </div>
           
@@ -216,18 +210,18 @@ const HomePage = () => {
             {[
               {
                 step: '01',
-                title: 'Explora Proyectos',
-                description: 'Navega por nuestra selección de proyectos solares verificados y elige los que mejor se adapten a tus objetivos de inversión.',
+                title: 'Encuentra tu CS',
+                description: 'Navega por nuestra sección de Comunidades Solares y encuentra tu Comunidad Solar local.',
               },
               {
                 step: '02',
                 title: 'Simula tu Inversión',
-                description: 'Usa nuestro simulador avanzado para calcular retornos potenciales basados en tu consumo energético y presupuesto.',
+                description: 'Usa nuestro simulador avanzado para calcular retornos potenciales basados en tu factura eléctrica y presupuesto.',
               },
               {
                 step: '03',
-                title: 'Invierte y Monitorea',
-                description: 'Realiza tu inversión de forma segura y sigue el rendimiento de tus proyectos en tiempo real desde tu dashboard.',
+                title: 'Invierte',
+                description: 'Invierte en tu Comunidad Solar y percibe los retornos en tu factura eléctrica!',
               },
             ].map((step, index) => (
               <motion.div
@@ -284,10 +278,10 @@ const HomePage = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                to="/proyectos" 
+                to="/comunidades-solares" 
                 className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4"
               >
-                Ver Proyectos Disponibles
+                Ver Comunidades Solares Disponibles
               </Link>
               
               <Link 

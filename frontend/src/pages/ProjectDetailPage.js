@@ -156,8 +156,8 @@ const ProjectDetailPage = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">Proyecto no encontrado</p>
-          <Link to="/proyectos" className="btn btn-primary">
-            Volver a Proyectos
+          <Link to="/comunidades-solares" className="btn btn-primary">
+            Volver a Comunidades Solares
           </Link>
         </div>
       </div>
@@ -191,11 +191,11 @@ const ProjectDetailPage = () => {
       <div className="container-xl section-padding">
         {/* Back Button */}
         <Link 
-          to="/proyectos" 
+          to="/comunidades-solares" 
           className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6"
         >
           <HiOutlineArrowLeft className="w-5 h-5 mr-2" />
-          Volver a Proyectos
+          Volver a Comunidades Solares
         </Link>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

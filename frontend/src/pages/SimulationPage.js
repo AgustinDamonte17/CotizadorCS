@@ -177,9 +177,9 @@ const SimulationPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Proyecto no encontrado</h2>
-          <Link to="/proyectos" className="btn btn-primary">
-            Volver a Proyectos
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Comunidad Solar no encontrada</h2>
+          <Link to="/comunidades-solares" className="btn btn-primary">
+            Volver a Comunidades Solares
           </Link>
         </div>
       </div>
@@ -192,11 +192,11 @@ const SimulationPage = () => {
         {/* Header */}
         <div className="mb-8">
           <Link 
-            to={`/proyectos/${id}`}
+            to={`/comunidades-solares/${id}`}
             className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4"
           >
             <HiOutlineArrowLeft className="w-4 h-4 mr-2" />
-            Volver al Proyecto
+            Volver a la Comunidad Solar
           </Link>
           
           <div className="bg-white rounded-xl shadow-sm p-6">
