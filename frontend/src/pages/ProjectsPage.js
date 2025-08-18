@@ -89,30 +89,41 @@ const ProjectsPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-xl section-padding">
+    <div className="min-h-screen relative">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src="/images/backgrounds/parquesolarnubes.jpg"
+          alt="Parque Solar con nubes - Comunidades Solares"
+          className="w-full h-full object-cover object-center"
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+      </div>
+
+      <div className="container-xl section-padding relative z-10 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-section gradient-text mb-4">
+          <h1 className="text-section text-white mb-4">
             Comunidades Solares
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-100">
             Encuentra tu Comunidad Solar: invertí, generá energía y ahorrá.
           </p>
         </div>
         
         {/* Search and Filters */}
-        <div className="card p-6 mb-8">
+        <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 mb-4">
             {/* Search */}
             <div className="flex-1 relative">
-              <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-200 group-hover:text-gray-600 w-5 h-5 transition-colors duration-300" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar comunidades solares por nombre, ubicación..."
-                className="input pl-10"
+                className="w-full pl-10 pr-4 py-3 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 placeholder-gray-300 group-hover:placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
               />
             </div>
             
@@ -121,7 +132,7 @@ const ProjectsPage = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="input"
+                className="w-full px-4 py-3 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
               >
                 {sortOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -134,7 +145,7 @@ const ProjectsPage = () => {
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`btn ${showFilters ? 'btn-primary' : 'btn-outline'} flex items-center space-x-2`}
+              className={`${showFilters ? 'btn btn-primary' : 'px-4 py-2 border-2 border-white/50 text-white bg-transparent rounded-lg group-hover:bg-primary-600 group-hover:border-primary-600 group-hover:text-white'} flex items-center space-x-2 transition-all duration-300 font-medium`}
             >
               <HiOutlineFilter className="w-5 h-5" />
               <span>Filtros</span>
@@ -149,16 +160,16 @@ const ProjectsPage = () => {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
-                className="border-t border-gray-200 pt-4"
+                className="border-t border-white/30 group-hover:border-gray-300 pt-4 transition-colors duration-300"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Status Filter */}
                   <div>
-                    <label className="form-label">Estado</label>
+                    <label className="block text-sm font-medium text-gray-200 group-hover:text-gray-700 mb-2 transition-colors duration-300">Estado</label>
                     <select
                       value={filters.status}
                       onChange={(e) => handleFilterChange('status', e.target.value)}
-                      className="input"
+                      className="w-full px-4 py-3 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
                     >
                       {statusOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -170,24 +181,24 @@ const ProjectsPage = () => {
                   
                   {/* Power Range */}
                   <div>
-                    <label className="form-label">Potencia Mínima (kW)</label>
+                    <label className="block text-sm font-medium text-gray-200 group-hover:text-gray-700 mb-2 transition-colors duration-300">Potencia Mínima (kW)</label>
                     <input
                       type="number"
                       value={filters.min_power}
                       onChange={(e) => handleFilterChange('min_power', e.target.value)}
                       placeholder="Ej: 100"
-                      className="input"
+                      className="w-full px-4 py-3 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 placeholder-gray-300 group-hover:placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
                     />
                   </div>
                   
                   <div>
-                    <label className="form-label">Potencia Máxima (kW)</label>
+                    <label className="block text-sm font-medium text-gray-200 group-hover:text-gray-700 mb-2 transition-colors duration-300">Potencia Máxima (kW)</label>
                     <input
                       type="number"
                       value={filters.max_power}
                       onChange={(e) => handleFilterChange('max_power', e.target.value)}
                       placeholder="Ej: 1000"
-                      className="input"
+                      className="w-full px-4 py-3 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 placeholder-gray-300 group-hover:placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
                     />
                   </div>
                   
@@ -211,7 +222,7 @@ const ProjectsPage = () => {
         
         {/* Results Summary */}
         <div className="mb-6">
-          <p className="text-gray-600">
+          <p className="text-gray-100">
             {projects?.results?.length || 0} comunidad{(projects?.results?.length || 0) !== 1 ? 'es solares' : ' solar'} encontrada{(projects?.results?.length || 0) !== 1 ? 's' : ''}
           </p>
         </div>
@@ -271,7 +282,7 @@ const ProjectCard = ({ project, index }) => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="card card-hover"
+      className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group"
     >
       {/* Project Image */}
       <div className="relative h-48 bg-gradient-to-br from-primary-100 to-accent-100 rounded-t-xl overflow-hidden">
@@ -297,11 +308,11 @@ const ProjectCard = ({ project, index }) => {
       
       {/* Project Content */}
       <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <h3 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-2 transition-colors duration-300">
           {project.name}
         </h3>
         
-        <div className="flex items-center text-gray-600 mb-4">
+        <div className="flex items-center text-gray-200 group-hover:text-gray-600 mb-4 transition-colors duration-300">
           <HiOutlineLocationMarker className="w-4 h-4 mr-1" />
           <span className="text-sm">{project.location}</span>
         </div>
@@ -309,8 +320,8 @@ const ProjectCard = ({ project, index }) => {
         {/* Key Metrics */}
         <div className="space-y-3 mb-6">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Potencia Disponible</span>
-            <span className="font-medium text-primary-600">
+            <span className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia Disponible</span>
+            <span className="font-medium text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
               {apiUtils.formatPower(project.available_power)}
             </span>
           </div>
@@ -319,8 +330,8 @@ const ProjectCard = ({ project, index }) => {
           
           {project.available_power_percentage && (
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Disponibilidad</span>
-              <span className="font-medium text-accent-600">
+              <span className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Disponibilidad</span>
+              <span className="font-medium text-accent-200 group-hover:text-accent-600 transition-colors duration-300">
                 {apiUtils.formatNumber(project.available_power_percentage, 1)}%
               </span>
             </div>
@@ -330,7 +341,7 @@ const ProjectCard = ({ project, index }) => {
         {/* Action Button */}
         <Link
           to={`/comunidades-solares/${project.id}`}
-          className="btn btn-primary w-full flex items-center justify-center space-x-2"
+          className="w-full flex items-center justify-center space-x-2 px-4 py-3 border-2 border-white/50 text-white bg-transparent rounded-lg group-hover:bg-primary-600 group-hover:border-primary-600 transition-all duration-300 font-medium"
         >
           <HiOutlineEye className="w-4 h-4" />
           <span>Ver Detalles</span>
