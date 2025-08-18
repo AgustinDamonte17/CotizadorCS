@@ -59,7 +59,7 @@ const NotFoundPage = () => {
             
             <p className="text-lg text-gray-600 mb-8">
               La página que estás buscando no existe o ha sido movida. 
-              Pero no te preocupes, puedes explorar nuestros proyectos de energía solar.
+              Pero no te preocupes, puedes explorar nuestras comunidades solares.
             </p>
           </motion.div>
           
@@ -79,11 +79,11 @@ const NotFoundPage = () => {
             </Link>
             
             <Link
-              to="/proyectos"
+              to="/comunidades-solares"
               className="btn btn-outline text-lg px-8 py-3 flex items-center justify-center"
             >
               <HiOutlineLightningBolt className="w-5 h-5 mr-2" />
-              Ver Proyectos
+              Ver Comunidades Solares
             </Link>
           </motion.div>
           

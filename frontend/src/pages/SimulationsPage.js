@@ -186,7 +186,7 @@ const SimulationsPage = () => {
                 title="No tienes simulaciones aún"
                 description="Explora nuestros proyectos y crea tu primera simulación de inversión."
                 action={
-                  <Link to="/proyectos" className="btn btn-primary">
+                  <Link to="/comunidades-solares" className="btn btn-primary">
                     Explorar Proyectos
                   </Link>
                 }
@@ -209,7 +209,7 @@ const SimulationsPage = () => {
               <Link to="/contacto" className="btn btn-primary">
                 Contactar Asesor
               </Link>
-              <Link to="/proyectos" className="btn btn-outline">
+              <Link to="/comunidades-solares" className="btn btn-outline">
                 Crear Nueva Simulación
               </Link>
             </div>

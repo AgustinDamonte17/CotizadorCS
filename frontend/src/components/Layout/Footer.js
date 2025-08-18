@@ -20,7 +20,7 @@ const Footer = () => {
   
   const footerLinks = {
     platform: [
-      { name: 'Proyectos', href: '/proyectos' },
+      { name: 'Comunidades Solares', href: '/comunidades-solares' },
       { name: 'Mis Simulaciones', href: '/mis-simulaciones' },
       { name: 'Contacto', href: '/contacto' },
     ],
@@ -93,11 +93,10 @@ const Footer = () => {
         <div className="container-xl section-padding py-12">
           <div className="text-center">
             <h3 className="text-2xl font-heading font-bold text-white mb-4">
-              Mantente informado sobre energía solar
+              Mantente informado sobre Comunidades Solares
             </h3>
             <p className="text-primary-100 mb-6 max-w-2xl mx-auto">
-              Recibe las últimas noticias sobre proyectos, oportunidades de inversión y 
-              tendencias en energía renovable directamente en tu inbox.
+              Recibe las últimas noticias sobre Comunidades Solares y tendencias en energía renovable directamente en tu inbox.
             </p>
             
             <form onSubmit={handleNewsletterSubmit} className="max-w-md mx-auto flex gap-3">

@@ -33,8 +33,8 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<HomePage />} />
-              <Route path="/proyectos" element={<ProjectsPage />} />
-              <Route path="/proyectos/:id" element={<ProjectDetailPage />} />
+              <Route path="/comunidades-solares" element={<ProjectsPage />} />
+              <Route path="/comunidades-solares/:id" element={<ProjectDetailPage />} />
               <Route path="/simular/:id" element={<SimulationPage />} />
               <Route path="/mis-simulaciones" element={<SimulationsPage />} />
               <Route path="/contacto" element={<ContactPage />} />

@@ -149,7 +149,7 @@ const ContactPage = () => {
                     type="tel"
                     {...register('phone')}
                     className="input"
-                    placeholder="+54 11 1234-5678"
+                    placeholder="54 11 4000-5000"
                   />
                 </div>
                 

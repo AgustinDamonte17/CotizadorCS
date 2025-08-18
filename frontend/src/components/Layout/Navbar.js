@@ -18,7 +18,7 @@ const Navbar = () => {
   
   const navigation = [
     { name: 'Inicio', href: '/', icon: HiOutlineHome },
-    { name: 'Proyectos', href: '/proyectos', icon: HiOutlineSun },
+    { name: 'Comunidades Solares', href: '/comunidades-solares', icon: HiOutlineSun },
     { name: 'Mis Simulaciones', href: '/mis-simulaciones', icon: HiOutlineChartBar },
     { name: 'Contacto', href: '/contacto', icon: HiOutlineMail },
   ];
@@ -72,7 +72,7 @@ const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden md:block">
             <Link
-              to="/proyectos"
+              to="/comunidades-solares"
               className="btn btn-primary"
             >
               Simular Ahora
@@ -129,7 +129,7 @@ const Navbar = () => {
               {/* Mobile CTA */}
               <div className="pt-4 border-t border-gray-100">
                 <Link
-                  to="/proyectos"
+                  to="/comunidades-solares"
                   onClick={() => setIsOpen(false)}
                   className="btn btn-primary w-full justify-center"
                 >
