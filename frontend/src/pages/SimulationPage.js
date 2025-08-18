@@ -90,14 +90,25 @@ const SimulationPage = () => {
 
       setLimitsLoading(true);
       try {
-        const response = await api.calculateLimits({
+        const requestData = {
           monthly_bill_ars: monthlyBill,
           project_id: project.id,
           tariff_category_id: tariffCategoryId
-        });
-        setLimits(response.data);
+        };
+        console.log('🔍 DEBUG - Request data:', requestData);
+        const response = await api.calculateLimits(requestData);
+        console.log('🔍 DEBUG - Full response:', response);
+        console.log('🔍 DEBUG - Response data:', response.data);
+        console.log('🔍 DEBUG - max_panels_allowed:', response.data?.max_panels_allowed);
+        
+        // Los datos están en response directamente, no en response.data
+        const limitsData = response.data || response;
+        console.log('🔍 DEBUG - Using limits data:', limitsData);
+        setLimits(limitsData);
       } catch (error) {
-        console.error('Error calculating limits:', error);
+        console.error('🔍 DEBUG - API Error:', error);
+        console.error('🔍 DEBUG - Error response:', error.response);
+        console.error('🔍 DEBUG - Error message:', error.message);
         setLimits(null);
       } finally {
         setLimitsLoading(false);
@@ -106,6 +117,14 @@ const SimulationPage = () => {
 
     calculateLimits();
   }, [monthlyBill, project, tariffCategoryId]);
+
+  // Calculate maximum panels based on bill coverage limits (100% max)
+  const maxPanelsBasedOnBill = React.useMemo(() => {
+    console.log('🔍 DEBUG - limits object:', limits);
+    console.log('🔍 DEBUG - max_panels_allowed value:', limits?.max_panels_allowed);
+    if (!limits?.max_panels_allowed) return null;
+    return limits.max_panels_allowed;
+  }, [limits]);
 
   // Calculate suggested maximum panels based on project availability
   const maxAvailablePanels = React.useMemo(() => {
@@ -117,7 +136,24 @@ const SimulationPage = () => {
     return Math.max(1, maxPanels); // At least 1 panel
   }, [project]);
 
-  const maxPanels = maxAvailablePanels;
+  // Use the most restrictive limit: either bill-based or project capacity
+  const maxPanels = React.useMemo(() => {
+    console.log('🔍 DEBUG - maxPanelsBasedOnBill:', maxPanelsBasedOnBill);
+    console.log('🔍 DEBUG - maxAvailablePanels:', maxAvailablePanels);
+    
+    if (!maxPanelsBasedOnBill && !maxAvailablePanels) return null;
+    if (!maxPanelsBasedOnBill) {
+      console.log('🔍 DEBUG - Using maxAvailablePanels:', maxAvailablePanels);
+      return maxAvailablePanels;
+    }
+    if (!maxAvailablePanels) {
+      console.log('🔍 DEBUG - Using maxPanelsBasedOnBill:', maxPanelsBasedOnBill);
+      return maxPanelsBasedOnBill;
+    }
+    const result = Math.min(maxPanelsBasedOnBill, maxAvailablePanels);
+    console.log('🔍 DEBUG - Using minimum of both:', result);
+    return result;
+  }, [maxPanelsBasedOnBill, maxAvailablePanels]);
 
   // Create simulation mutation
   const createSimulationMutation = useMutation(
@@ -396,7 +432,7 @@ const SimulationPage = () => {
                       Número de Paneles
                       {maxPanels && (
                         <span className="text-sm text-gray-500 font-normal">
-                          {' '}(máximo {maxPanels} para tu consumo)
+                          {' '}(máximo {maxPanels} paneles)
                         </span>
                       )}
                     </label>
@@ -407,7 +443,7 @@ const SimulationPage = () => {
                         min: { value: 1, message: 'Mínimo 1 panel' },
                         max: maxPanels ? { 
                           value: maxPanels, 
-                          message: `Máximo ${maxPanels} paneles disponibles en el proyecto` 
+                          message: `Máximo ${maxPanels} paneles (el ahorro no puede superar el 100% de tu factura mensual)` 
                         } : undefined
                       })}
                       min="1"
@@ -421,7 +457,12 @@ const SimulationPage = () => {
                     )}
                     {maxPanels && (
                       <p className="text-xs text-gray-600 mt-1">
-                        💡 Máximo {maxPanels} paneles disponibles en este proyecto
+                        💡 Máximo {maxPanels} paneles para no superar el 100% de cobertura de tu factura
+                        {maxPanelsBasedOnBill && maxAvailablePanels && maxPanelsBasedOnBill < maxAvailablePanels && (
+                          <span className="block text-orange-600">
+                            ⚠️ Limitado por tu factura mensual (proyecto permite hasta {maxAvailablePanels} paneles)
+                          </span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -429,20 +470,37 @@ const SimulationPage = () => {
 
                 {simulationType === 'investment' && (
                   <div>
-                    <label className="form-label">Monto de Inversión (USD)</label>
+                    <label className="form-label">
+                      Monto de Inversión (USD)
+                      {limits?.max_investment_usd && (
+                        <span className="text-sm text-gray-500 font-normal">
+                          {' '}(máximo ${apiUtils.formatNumber(limits.max_investment_usd, 0)} USD)
+                        </span>
+                      )}
+                    </label>
                     <input
                       type="number"
                       {...register('investment_amount_usd', {
                         required: 'Monto de inversión es requerido',
-                        min: { value: 1, message: 'Mínimo $1 USD' }
+                        min: { value: 1, message: 'Mínimo $1 USD' },
+                        max: limits?.max_investment_usd ? { 
+                          value: limits.max_investment_usd, 
+                          message: `Máximo $${apiUtils.formatNumber(limits.max_investment_usd, 0)} USD (no puede superar el 100% de cobertura de tu factura)` 
+                        } : undefined
                       })}
                       min="1"
+                      max={limits?.max_investment_usd || undefined}
                       step="0.01"
                       className="input"
                       placeholder="ej. 5000"
                     />
                     {errors.investment_amount_usd && (
                       <p className="form-error">{errors.investment_amount_usd.message}</p>
+                    )}
+                    {limits?.max_investment_usd && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        💡 Máximo ${apiUtils.formatNumber(limits.max_investment_usd, 0)} USD para no superar el 100% de cobertura de tu factura
+                      </p>
                     )}
                   </div>
                 )}
