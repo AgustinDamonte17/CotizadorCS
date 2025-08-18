@@ -146,29 +146,18 @@ const HomePage = () => {
       </section>
       
       {/* Features Section */}
-      <section ref={featuresRef} className="relative py-20">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0">
-          <img 
-            src="/images/backgrounds/texturapaneles.jpg"
-            alt="Textura de paneles solares"
-            className="w-full h-full object-cover object-center"
-          />
-          {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
-        </div>
-
-        <div className="container-xl section-padding relative z-10">
+      <section ref={featuresRef} className="py-20 bg-gray-50">
+        <div className="container-xl section-padding">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={featuresInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-section text-white mb-4">
+            <h2 className="text-section gradient-text mb-4">
               ¿Por qué elegir Simulador CS?
             </h2>
-            <p className="text-xl text-gray-100 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Nuestra plataforma combina tecnología avanzada, transparencia total y 
               conocimiento especializado para simular escenarios comparativos que te permitan tomar la mejor decisión.
             </p>
@@ -184,17 +173,17 @@ const HomePage = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={featuresInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-8 text-center"
+                  className="card p-8 text-center card-hover"
                 >
                   <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   
-                  <h3 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-4 transition-colors duration-300">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
                     {feature.title}
                   </h3>
                   
-                  <p className="text-gray-200 group-hover:text-gray-600 leading-relaxed transition-colors duration-300">
+                  <p className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </motion.div>
