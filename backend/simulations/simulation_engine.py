@@ -192,28 +192,48 @@ class SolarInvestmentCalculator:
         original_investment = investment_amount_usd
         investment_amount_usd = min(investment_amount_usd, max_investment_usd_100_coverage)
         
-        # Calculate number of panels from investment
-        if self.project.price_per_panel_usd:
-            number_of_panels = int((investment_amount_usd / self.project.price_per_panel_usd).to_integral_value())
-        else:
-            # Calculate from price per Wp
-            total_watts = investment_amount_usd / self.project.price_per_wp_usd
-            number_of_panels = int((total_watts / self.project.panel_power_wp).to_integral_value())
+        # Calculate how many panels can be bought with the investment using tiered pricing
+        # We need to reverse-engineer from investment to panels using tiered pricing
         
-        # Recalculate actual investment based on whole panels using tiered pricing
+        # Try different quantities to find how many panels this investment can buy
+        max_panels_possible = 1000  # Reasonable upper limit
+        best_panels = 0
+        
+        for test_panels in range(1, max_panels_possible + 1):
+            cost_for_panels = self._calculate_total_investment_tiered(test_panels)
+            if cost_for_panels <= investment_amount_usd:
+                best_panels = test_panels
+            else:
+                break
+        
+        # Use the exact number of panels that can be afforded with tiered pricing
+        equivalent_panels = Decimal(str(best_panels))
+        number_of_panels = best_panels
+        
+        # Calculate actual power based on the panels we can afford
         panel_power_kw = self.project.panel_power_wp / 1000
-        actual_power_kw = number_of_panels * panel_power_kw
+        actual_power_kw = equivalent_panels * panel_power_kw
         
-        # Use tiered pricing system
-        actual_investment_usd = self._calculate_total_investment_tiered(number_of_panels)
+        # Keep the user's exact investment amount
+        actual_investment_usd = investment_amount_usd
         actual_investment_ars = actual_investment_usd * self.exchange_rate
         
-        # Calculate generation
+        # Calculate generation based on actual power (not rounded panels)
         actual_annual_generation = actual_power_kw * self.annual_generation_factor * self.performance_ratio
         actual_monthly_generation = actual_annual_generation / 12
         
-        # Calculate savings using new formula (based on number of panels)
-        monthly_savings_ars = self._calculate_monthly_savings(number_of_panels)
+        # Calculate savings using the same formula as _calculate_monthly_savings
+        # But with equivalent fractional panels instead of whole panels
+        # Formula: equivalent_panels × 0.66 × precio_energia × 24 × 30 × 0.19
+        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        monthly_savings_ars = (
+            equivalent_panels * 
+            Decimal('0.66') * 
+            energy_price_ars * 
+            Decimal('24') * 
+            Decimal('30') * 
+            Decimal('0.19')
+        )
         annual_savings_ars = monthly_savings_ars * 12
         
         # Calculate annual savings in USD using blue exchange rate
