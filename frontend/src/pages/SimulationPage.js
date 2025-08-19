@@ -223,19 +223,30 @@ const SimulationPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-xl section-padding">
+    <div className="min-h-screen relative py-8">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src="/images/backgrounds/tecnicosenparquesolar.jpg"
+          alt="Técnicos trabajando en parque solar"
+          className="w-full h-full object-cover object-center"
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+      </div>
+
+      <div className="container-xl section-padding relative z-10">
         {/* Header */}
         <div className="mb-8">
           <Link 
             to={`/comunidades-solares/${id}`}
-            className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4"
+            className="inline-flex items-center text-white hover:text-primary-200 mb-4 transition-colors duration-300"
           >
             <HiOutlineArrowLeft className="w-4 h-4 mr-2" />
             Volver a la Comunidad Solar
           </Link>
           
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -586,17 +597,17 @@ const SimulationPage = () => {
             {simulationResult ? (
               <SimulationResults result={simulationResult} project={project} />
             ) : (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="text-center py-12">
-                  <HiOutlineChartBar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Resultados de la Simulación
-                  </h3>
-                  <p className="text-gray-600">
-                    Completa el formulario y haz click en "Calcular Simulación" para ver los resultados.
-                  </p>
-                </div>
+                          <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg p-6">
+              <div className="text-center py-12">
+                <HiOutlineChartBar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-white mb-2">
+                  Resultados de la Simulación
+                </h3>
+                <p className="text-gray-200">
+                  Completa el formulario y haz click en "Calcular Simulación" para ver los resultados.
+                </p>
               </div>
+            </div>
             )}
           </div>
         </div>
