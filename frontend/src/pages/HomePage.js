@@ -110,7 +110,7 @@ const HomePage = () => {
             </p>
             
             <div className="flex justify-center">
-              <Link to="/comunidades-solares" className="btn border-2 border-white text-white hover:bg-primary-600 hover:border-primary-600 text-lg px-8 py-4">
+              <Link to="/comunidades-solares" className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white hover:bg-primary-600 hover:border-primary-600 transition-all duration-300 text-lg px-8 py-4 font-medium">
                 Explorar Comunidades Solares
               </Link>
             </div>
@@ -290,14 +290,14 @@ const HomePage = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 to="/comunidades-solares" 
-                className="btn bg-white text-primary-600 hover:bg-gray-100 text-lg px-8 py-4"
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white hover:bg-primary-600 hover:border-primary-600 transition-all duration-300 text-lg px-8 py-4 font-medium"
               >
                 Ver Comunidades Solares Disponibles
               </Link>
               
               <Link 
                 to="/contacto" 
-                className="btn border-2 border-white text-white hover:bg-white hover:text-primary-600 text-lg px-8 py-4"
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white hover:bg-white hover:text-primary-600 transition-all duration-300 text-lg px-8 py-4 font-medium"
               >
                 Contactar Asesor
               </Link>
