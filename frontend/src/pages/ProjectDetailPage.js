@@ -354,21 +354,64 @@ const ProjectDetailPage = () => {
               
               {isFinancialUnlocked ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Precio por Wp</label>
-                    <p className="text-lg font-semibold text-gray-900">
-                      ${apiUtils.formatNumber(project.price_per_wp_usd, 2)} USD
-                    </p>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Precio por Wp según Cantidad</label>
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 1</div>
+                          <div className="text-sm font-semibold text-gray-700">1-9 paneles</div>
+                          <div className="text-lg font-bold text-red-600">$1.06 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 2</div>
+                          <div className="text-sm font-semibold text-gray-700">10-99 paneles</div>
+                          <div className="text-lg font-bold text-yellow-600">$0.76 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 3</div>
+                          <div className="text-sm font-semibold text-gray-700">100+ paneles</div>
+                          <div className="text-lg font-bold text-green-600">$0.61 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-gray-600 text-center">
+                        💡 Precios calculados con paneles de 660 Wp
+                      </div>
+                    </div>
                   </div>
                   
-                  {project.price_per_panel_usd && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Precio por Panel</label>
-                      <p className="text-lg font-semibold text-gray-900">
-                        ${apiUtils.formatNumber(project.price_per_panel_usd)} USD
-                      </p>
+                  {/* Pricing Scale by Panel */}
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Precio por Panel según Cantidad</label>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 1</div>
+                          <div className="text-sm font-semibold text-gray-700">1-9 paneles</div>
+                          <div className="text-lg font-bold text-red-600">$700 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 2</div>
+                          <div className="text-sm font-semibold text-gray-700">10-99 paneles</div>
+                          <div className="text-lg font-bold text-yellow-600">$500 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 3</div>
+                          <div className="text-sm font-semibold text-gray-700">100+ paneles</div>
+                          <div className="text-lg font-bold text-green-600">$400 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-gray-600 text-center">
+                        💡 Los precios se aplican de forma escalonada según la cantidad total de paneles
+                      </div>
                     </div>
-                  )}
+                  </div>
                   
                   {project.funding_goal && (
                     <>

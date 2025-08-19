@@ -95,89 +95,41 @@ def create_solar_projects():
     
     projects = [
         {
-            'name': 'Parque Solar Mendoza Norte',
-            'description': 'Proyecto de energía solar comunitaria ubicado en Mendoza, diseñado para abastecer a más de 500 familias. El proyecto utiliza tecnología de paneles de última generación con seguimiento solar para maximizar la eficiencia. Ubicado en una zona con excelente irradiación solar, garantiza una generación óptima durante todo el año.',
-            'location': 'Mendoza, Argentina',
-            'status': 'funding',
-            'total_power_installed': Decimal('800.00'),
-            'total_power_projected': Decimal('1200.00'),
-            'available_power': Decimal('400.00'),
-            'price_per_wp_usd': Decimal('1.25'),
-            'price_per_panel_usd': Decimal('687.50'),
-            'panel_power_wp': Decimal('550'),
-            'owners': 'Energía Sustentable SA, Green Capital Fund',
-            'expected_annual_generation': Decimal('1800000'),
-            'funding_goal': Decimal('500000'),
-            'funding_raised': Decimal('180000'),
-            'funding_deadline': date.today() + timedelta(days=90),
-        },
-        {
-            'name': 'Solar Córdoba Comunitario',
-            'description': 'Iniciativa de energía renovable que conecta a la comunidad de Córdoba con inversiones sostenibles. El proyecto incorpora sistemas de almacenamiento de energía para garantizar suministro durante las horas de menor irradiación. Cuenta con un programa de educación ambiental para la comunidad local.',
-            'location': 'Córdoba, Argentina',
-            'status': 'construction',
-            'total_power_installed': Decimal('500.00'),
-            'total_power_projected': Decimal('750.00'),
-            'available_power': Decimal('250.00'),
-            'price_per_wp_usd': Decimal('1.35'),
-            'price_per_panel_usd': Decimal('742.50'),
-            'panel_power_wp': Decimal('550'),
-            'owners': 'Cooperativa Solar Córdoba, Instituto de Energía',
-            'expected_annual_generation': Decimal('1125000'),
-            'funding_goal': Decimal('320000'),
-            'funding_raised': Decimal('320000'),
-            'funding_deadline': date.today() - timedelta(days=30),
-        },
-        {
-            'name': 'Granja Solar Buenos Aires',
-            'description': 'Proyecto agroindustrial que combina la producción agrícola con la generación de energía solar. Los paneles están elevados permitiendo el cultivo debajo de ellos, creando un ecosistema sustentable. Genera energía limpia mientras mantiene la productividad agrícola de la tierra.',
-            'location': 'Buenos Aires, Argentina',
+            'name': 'Cooperativa Ganadera, Agrícola y de consumo Porteña LTDA.',
+            'description': 'Instalación solar de 396 kWp ubicada en Porteña, Córdoba. La instalación consta de 600 módulos fotovoltaicos de marca Trina Solar modelo TSM-660DE21, con tecnología bifacial. Cada panel posee una potencia nominal de aproximadamente 660 Wp. Se emplean tres inversores Sungrow SG110CX-P2, del tipo string trifásico con una potencia nominal de 110 kW cada uno, que permiten una eficiente conversión de energía DC a AC para inyección a red. Esta marca de inversores, líder a nivel mundial, ofrece comunicación y monitoreo de la planta solar a través de una plataforma en línea llamada iSolarCloud.',
+            'location': 'Porteña, Córdoba, Argentina',
             'status': 'operational',
-            'total_power_installed': Decimal('1500.00'),
-            'total_power_projected': Decimal('1500.00'),
-            'available_power': Decimal('300.00'),
-            'price_per_wp_usd': Decimal('1.15'),
-            'price_per_panel_usd': Decimal('632.50'),
-            'panel_power_wp': Decimal('550'),
-            'owners': 'AgroSolar SA, Banco de Inversión Verde',
-            'expected_annual_generation': Decimal('2250000'),
-            'funding_goal': Decimal('750000'),
-            'funding_raised': Decimal('750000'),
-            'funding_deadline': date.today() - timedelta(days=180),
+            'total_power_installed': Decimal('396.00'),
+            'total_power_projected': Decimal('396.00'),
+            'available_power': Decimal('396.00'),
+            'price_per_wp_usd': Decimal('1.20'),
+            'price_per_panel_usd': Decimal('792.00'),
+            'panel_power_wp': Decimal('660'),
+            'owners': 'Cooperativa Ganadera, Agrícola y de consumo Porteña LTDA.',
+            'expected_annual_generation': Decimal('631350'),
+            'funding_goal': Decimal('475200'),
+            'funding_raised': Decimal('0.00'),
+            'funding_deadline': date.today() - timedelta(days=365),
+            'commercial_whatsapp': '+54 9 351 703-5589',
         },
         {
-            'name': 'Solar Patagonia Wind & Sun',
-            'description': 'Proyecto híbrido que combina energía solar y eólica en la Patagonia. Aprovecha los excelentes recursos renovables de la región para crear un sistema de generación limpia altamente eficiente. Incluye sistemas de predicción meteorológica avanzados para optimizar la generación.',
-            'location': 'Neuquén, Argentina',
+            'name': 'Cooperativa Luz y Fuerza Villa General Belgrano',
+            'description': 'Parque solar de 1 MW ubicado en Villa General Belgrano, Córdoba. La instalación cuenta con aproximadamente 1,515 módulos fotovoltaicos de marca Trina Solar modelo TSM-660DE21, con tecnología bifacial. Cada panel posee una potencia nominal de 660 Wp, totalizando una potencia instalada de 1 MW. Este proyecto de la Cooperativa Luz y Fuerza representa un hito en el desarrollo de energías renovables en la región, contribuyendo significativamente al suministro de energía limpia y sostenible.',
+            'location': 'Villa General Belgrano, Córdoba, Argentina',
             'status': 'development',
             'total_power_installed': Decimal('0.00'),
-            'total_power_projected': Decimal('2000.00'),
-            'available_power': Decimal('2000.00'),
-            'price_per_wp_usd': Decimal('1.45'),
-            'price_per_panel_usd': Decimal('797.50'),
-            'panel_power_wp': Decimal('550'),
-            'owners': 'Patagonia Renewables, WindSun Investments',
-            'expected_annual_generation': Decimal('3500000'),
+            'total_power_projected': Decimal('1000.00'),
+            'available_power': Decimal('1000.00'),
+            'price_per_wp_usd': Decimal('1.20'),
+            'price_per_panel_usd': Decimal('792.00'),
+            'panel_power_wp': Decimal('660'),
+            'owners': 'Cooperativa Luz y Fuerza Villa General Belgrano',
+            'expected_annual_generation': Decimal('1500000'),
             'funding_goal': Decimal('1200000'),
-            'funding_raised': Decimal('50000'),
-            'funding_deadline': date.today() + timedelta(days=150),
-        },
-        {
-            'name': 'Techo Solar Urbano',
-            'description': 'Red de instalaciones solares en techos urbanos de la Ciudad de Buenos Aires. Utiliza espacios subutilizados en edificios residenciales y comerciales para generar energía limpia. Incluye un programa de participación ciudadana donde los propietarios de techos reciben beneficios por ceder el espacio.',
-            'location': 'CABA, Argentina',
-            'status': 'funding',
-            'total_power_installed': Decimal('200.00'),
-            'total_power_projected': Decimal('600.00'),
-            'available_power': Decimal('400.00'),
-            'price_per_wp_usd': Decimal('1.55'),
-            'price_per_panel_usd': Decimal('852.50'),
-            'panel_power_wp': Decimal('550'),
-            'owners': 'Ciudad Solar SA, Cooperativa Urbana',
-            'expected_annual_generation': Decimal('900000'),
-            'funding_goal': Decimal('380000'),
-            'funding_raised': Decimal('120000'),
-            'funding_deadline': date.today() + timedelta(days=60),
+            'funding_raised': Decimal('0.00'),
+            'funding_deadline': date.today() + timedelta(days=45),
+            'financial_access_password': 'iris2025',
+            'commercial_whatsapp': '+54 9 351 703-5589',
         },
     ]
     
@@ -190,6 +142,47 @@ def create_solar_projects():
             print(f"  ✓ Created: {project.name}")
         else:
             print(f"  - Exists: {project.name}")
+
+
+def create_project_images():
+    """Create project images"""
+    print("Creating project images...")
+    
+    project_images = [
+        {
+            'project_name': 'Cooperativa Ganadera, Agrícola y de consumo Porteña LTDA.',
+            'image_path': 'projects/cooperativa-portena-solar.jpg',
+            'caption': 'Instalación solar de la Cooperativa Ganadera en Porteña, Córdoba',
+            'is_featured': True,
+            'order': 1
+        },
+        {
+            'project_name': 'Cooperativa Luz y Fuerza Villa General Belgrano',
+            'image_path': 'projects/vgb.jpg',
+            'caption': 'Instalación solar de la Cooperativa Luz y Fuerza en Villa General Belgrano, Córdoba',
+            'is_featured': True,
+            'order': 1
+        },
+    ]
+    
+    for img_data in project_images:
+        try:
+            project = SolarProject.objects.get(name=img_data['project_name'])
+            image, created = ProjectImage.objects.get_or_create(
+                project=project,
+                image=img_data['image_path'],
+                defaults={
+                    'caption': img_data['caption'],
+                    'is_featured': img_data['is_featured'],
+                    'order': img_data['order']
+                }
+            )
+            if created:
+                print(f"  ✓ Created image for: {project.name}")
+            else:
+                print(f"  - Image exists for: {project.name}")
+        except SolarProject.DoesNotExist:
+            print(f"  ❌ Project not found: {img_data['project_name']}")
 
 
 def create_site_settings():
@@ -242,9 +235,13 @@ def main():
         create_solar_projects()
         print()
         
+        create_project_images()
+        print()
+        
         print("✅ Configuración inicial completada exitosamente!")
         print("\n📋 Resumen:")
         print(f"   • Proyectos solares: {SolarProject.objects.count()}")
+        print(f"   • Imágenes de proyectos: {ProjectImage.objects.count()}")
         print(f"   • Categorías tarifarias: {TariffCategory.objects.count()}")
         print(f"   • Tipos de cambio: {ExchangeRate.objects.count()}")
         print(f"   • Configuración del sitio: ✓")
