@@ -239,23 +239,12 @@ const ProjectDetailPage = () => {
   };
   
   return (
-    <div className="min-h-screen relative py-8">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        <img 
-          src="/images/backgrounds/detallepanelsolar.jpg"
-          alt="Detalle de panel solar"
-          className="w-full h-full object-cover object-center"
-        />
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
-      </div>
-
-      <div className="container-xl section-padding relative z-10">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container-xl section-padding">
         {/* Back Button */}
         <Link 
           to="/comunidades-solares" 
-          className="inline-flex items-center text-white hover:text-primary-200 mb-6 transition-colors duration-300"
+          className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6"
         >
           <HiOutlineArrowLeft className="w-5 h-5 mr-2" />
           Volver a Comunidades Solares
@@ -265,13 +254,13 @@ const ProjectDetailPage = () => {
           {/* Project Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Project Header */}
-            <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6">
+            <div className="card p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-white group-hover:text-gray-900 mb-2 transition-colors duration-300">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {project.name}
                   </h1>
-                  <div className="flex items-center text-gray-200 group-hover:text-gray-600 mb-4 transition-colors duration-300">
+                  <div className="flex items-center text-gray-600 mb-4">
                     <HiOutlineLocationMarker className="w-5 h-5 mr-2" />
                     <span>{project.location}</span>
                   </div>
@@ -281,15 +270,15 @@ const ProjectDetailPage = () => {
                 </span>
               </div>
               
-              <p className="text-gray-200 group-hover:text-gray-700 leading-relaxed transition-colors duration-300">
+              <p className="text-gray-700 leading-relaxed">
                 {project.description}
               </p>
             </div>
             
             {/* Project Images */}
             {project.images && project.images.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6">
-                <h2 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-4 transition-colors duration-300">Galería del Proyecto</h2>
+              <div className="card p-6">
+                <h2 className="text-xl font-semibold mb-4">Galería del Proyecto</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {project.images.map((image) => (
                     <div key={image.id} className="relative aspect-video rounded-lg overflow-hidden">
@@ -310,49 +299,49 @@ const ProjectDetailPage = () => {
             )}
             
             {/* Technical Specifications */}
-            <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6">
-              <h2 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-4 transition-colors duration-300">Especificaciones Técnicas</h2>
+            <div className="card p-6">
+              <h2 className="text-xl font-semibold mb-4">Especificaciones Técnicas</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia Total Proyectada</label>
-                  <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                  <label className="text-sm font-medium text-gray-600">Potencia Total Proyectada</label>
+                  <p className="text-lg font-semibold text-gray-900">
                     {apiUtils.formatPower(project.total_power_projected)}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia Instalada</label>
-                  <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                  <label className="text-sm font-medium text-gray-600">Potencia Instalada</label>
+                  <p className="text-lg font-semibold text-gray-900">
                     {apiUtils.formatPower(project.total_power_installed)}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia Disponible</label>
-                  <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                  <label className="text-sm font-medium text-gray-600">Potencia Disponible</label>
+                  <p className="text-lg font-semibold text-primary-600">
                     {apiUtils.formatPower(project.available_power)}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Disponibilidad</label>
-                  <p className="text-lg font-semibold text-accent-200 group-hover:text-accent-600 transition-colors duration-300">
+                  <label className="text-sm font-medium text-gray-600">Disponibilidad</label>
+                  <p className="text-lg font-semibold text-accent-600">
                     {apiUtils.formatNumber(project.available_power_percentage, 1)}%
                   </p>
                 </div>
                 
                 {project.expected_annual_generation && (
                   <div>
-                    <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Generación Anual Esperada</label>
-                    <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                    <label className="text-sm font-medium text-gray-600">Generación Anual Esperada</label>
+                    <p className="text-lg font-semibold text-gray-900">
                       {apiUtils.formatEnergy(project.expected_annual_generation)}
                     </p>
                   </div>
                 )}
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia por Panel</label>
-                  <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                  <label className="text-sm font-medium text-gray-600">Potencia por Panel</label>
+                  <p className="text-lg font-semibold text-gray-900">
                     {apiUtils.formatNumber(project.panel_power_wp)} Wp
                   </p>
                 </div>
@@ -360,39 +349,82 @@ const ProjectDetailPage = () => {
             </div>
             
             {/* Financial Information */}
-            <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 relative">
-              <h2 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-4 transition-colors duration-300">Información Financiera</h2>
+            <div className="card p-6 relative">
+              <h2 className="text-xl font-semibold mb-4">Información Financiera</h2>
               
               {isFinancialUnlocked ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Precio por Wp</label>
-                    <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
-                      ${apiUtils.formatNumber(project.price_per_wp_usd, 2)} USD
-                    </p>
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Precio por Wp según Cantidad</label>
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 1</div>
+                          <div className="text-sm font-semibold text-gray-700">1-9 paneles</div>
+                          <div className="text-lg font-bold text-red-600">$1.06 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 2</div>
+                          <div className="text-sm font-semibold text-gray-700">10-99 paneles</div>
+                          <div className="text-lg font-bold text-yellow-600">$0.76 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 3</div>
+                          <div className="text-sm font-semibold text-gray-700">100+ paneles</div>
+                          <div className="text-lg font-bold text-green-600">$0.61 USD</div>
+                          <div className="text-xs text-gray-500">por Wp</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-gray-600 text-center">
+                        💡 Precios calculados con paneles de 660 Wp
+                      </div>
+                    </div>
                   </div>
                   
-                  {project.price_per_panel_usd && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Precio por Panel</label>
-                      <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
-                        ${apiUtils.formatNumber(project.price_per_panel_usd)} USD
-                      </p>
+                  {/* Pricing Scale by Panel */}
+                  <div className="sm:col-span-2">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Precio por Panel según Cantidad</label>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 1</div>
+                          <div className="text-sm font-semibold text-gray-700">1-9 paneles</div>
+                          <div className="text-lg font-bold text-red-600">$700 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 2</div>
+                          <div className="text-sm font-semibold text-gray-700">10-99 paneles</div>
+                          <div className="text-lg font-bold text-yellow-600">$500 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs font-medium text-gray-500 mb-1">TIER 3</div>
+                          <div className="text-sm font-semibold text-gray-700">100+ paneles</div>
+                          <div className="text-lg font-bold text-green-600">$400 USD</div>
+                          <div className="text-xs text-gray-500">por panel</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-xs text-gray-600 text-center">
+                        💡 Los precios se aplican de forma escalonada según la cantidad total de paneles
+                      </div>
                     </div>
-                  )}
+                  </div>
                   
                   {project.funding_goal && (
                     <>
                       <div>
-                        <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Meta de Financiamiento</label>
-                        <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                        <label className="text-sm font-medium text-gray-600">Meta de Financiamiento</label>
+                        <p className="text-lg font-semibold text-gray-900">
                           ${apiUtils.formatNumber(project.funding_goal)} USD
                         </p>
                       </div>
                       
                       <div>
-                        <label className="text-sm font-medium text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Financiamiento Recaudado</label>
-                        <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+                        <label className="text-sm font-medium text-gray-600">Financiamiento Recaudado</label>
+                        <p className="text-lg font-semibold text-primary-600">
                           {apiUtils.formatNumber(project.funding_percentage, 1)}%
                         </p>
                       </div>
@@ -452,19 +484,19 @@ const ProjectDetailPage = () => {
             
             {/* Project Owners */}
             {project.owners && (
-              <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6">
-                <h2 className="text-xl font-semibold text-white group-hover:text-gray-900 mb-4 transition-colors duration-300">Propietarios del Proyecto</h2>
-                <p className="text-gray-200 group-hover:text-gray-700 transition-colors duration-300">{project.owners}</p>
+              <div className="card p-6">
+                <h2 className="text-xl font-semibold mb-4">Propietarios del Proyecto</h2>
+                <p className="text-gray-700">{project.owners}</p>
               </div>
             )}
           </div>
           
           {/* Investment Simulator */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8 relative">
+            <div className="card p-6 sticky top-8 relative">
               <div className="flex items-center space-x-2 mb-4">
                 <HiOutlineCalculator className="w-6 h-6 text-primary-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Simulador de Inversión</h2>
+                <h2 className="text-xl font-semibold">Simulador de Inversión</h2>
               </div>
               
               {isFinancialUnlocked ? (
