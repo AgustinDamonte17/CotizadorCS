@@ -105,13 +105,13 @@ const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Tu email"
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white placeholder-gray-300 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300"
                 disabled={isSubscribing}
               />
               <button
                 type="submit"
                 disabled={isSubscribing}
-                className="px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white font-medium hover:bg-white hover:text-primary-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubscribing ? (
                   <div className="loading-spinner w-5 h-5" />
