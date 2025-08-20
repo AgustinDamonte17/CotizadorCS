@@ -239,12 +239,23 @@ const ProjectDetailPage = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-xl section-padding">
+    <div className="min-h-screen relative">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src="/images/backgrounds/detallepanelsolar.jpg"
+          alt="Detalle Panel Solar - Proyecto Solar"
+          className="w-full h-full object-cover object-center"
+        />
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+      </div>
+
+      <div className="container-xl section-padding relative z-10 py-8">
         {/* Back Button */}
         <Link 
           to="/comunidades-solares" 
-          className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6"
+          className="inline-flex items-center text-white hover:text-gray-200 mb-6 transition-colors duration-300"
         >
           <HiOutlineArrowLeft className="w-5 h-5 mr-2" />
           Volver a Comunidades Solares
@@ -412,24 +423,7 @@ const ProjectDetailPage = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  {project.funding_goal && (
-                    <>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Meta de Financiamiento</label>
-                        <p className="text-lg font-semibold text-gray-900">
-                          ${apiUtils.formatNumber(project.funding_goal)} USD
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Financiamiento Recaudado</label>
-                        <p className="text-lg font-semibold text-primary-600">
-                          {apiUtils.formatNumber(project.funding_percentage, 1)}%
-                        </p>
-                      </div>
-                    </>
-                  )}
+
                 </div>
               ) : (
                 <div className="relative">

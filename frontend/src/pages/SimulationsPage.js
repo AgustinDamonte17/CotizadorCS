@@ -105,11 +105,11 @@ const SimulationsPage = () => {
         
         {/* Change Email */}
         {userEmail && (
-          <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 mb-8">
+          <div className="bg-white border-2 border-white rounded-xl shadow-lg transition-all duration-300 group p-6 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-                <HiOutlineMail className="w-5 h-5 text-gray-200 group-hover:text-gray-600 transition-colors duration-300" />
-                <span className="text-gray-100 group-hover:text-gray-600 transition-colors duration-300">
+                <HiOutlineMail className="w-5 h-5 text-gray-600" />
+                <span className="text-gray-900">
                   Mostrando simulaciones para: <span className="font-medium">{userEmail}</span>
                 </span>
               </div>
@@ -119,9 +119,9 @@ const SimulationsPage = () => {
                   value={inputEmail}
                   onChange={(e) => setInputEmail(e.target.value)}
                   placeholder="Cambiar email"
-                  className="px-4 py-2 bg-transparent border-2 border-white/30 group-hover:border-gray-400 rounded-lg text-white group-hover:text-gray-900 placeholder-gray-300 group-hover:placeholder-gray-500 focus:bg-white focus:text-gray-900 focus:border-primary-500 focus:outline-none transition-all duration-300 text-sm"
+                  className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:outline-none transition-all duration-300 text-sm"
                 />
-                <button type="submit" className="px-4 py-2 border-2 border-white/50 text-white bg-transparent rounded-lg group-hover:bg-primary-600 group-hover:border-primary-600 group-hover:text-white transition-all duration-300 font-medium text-sm">
+                <button type="submit" className="px-4 py-2 bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 text-white rounded-lg transition-all duration-300 font-medium text-sm">
                   Cambiar
                 </button>
               </form>
@@ -145,45 +145,6 @@ const SimulationsPage = () => {
               </div>
             ) : simulations?.results?.length > 0 ? (
               <div className="space-y-6">
-                {/* Summary Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 text-center">
-                    <div className="text-2xl font-bold text-primary-200 group-hover:text-primary-600 mb-1 transition-colors duration-300">
-                      {simulations.results.length}
-                    </div>
-                    <div className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Total Simulaciones</div>
-                  </div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 text-center">
-                    <div className="text-2xl font-bold text-green-200 group-hover:text-green-600 mb-1 transition-colors duration-300">
-                      ${apiUtils.formatNumber(
-                        simulations.results.reduce((sum, sim) => sum + parseFloat(sim.total_investment_usd), 0)
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Inversión Total (USD)</div>
-                  </div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 text-center">
-                    <div className="text-2xl font-bold text-accent-200 group-hover:text-accent-600 mb-1 transition-colors duration-300">
-                      {apiUtils.formatNumber(
-                        simulations.results.reduce((sum, sim) => sum + parseFloat(sim.roi_annual), 0) / simulations.results.length,
-                        1
-                      )}%
-                    </div>
-                    <div className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">ROI Promedio</div>
-                  </div>
-                  
-                  <div className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6 text-center">
-                    <div className="text-2xl font-bold text-secondary-200 group-hover:text-secondary-600 mb-1 transition-colors duration-300">
-                      {apiUtils.formatNumber(
-                        simulations.results.reduce((sum, sim) => sum + parseFloat(sim.payback_period_years), 0) / simulations.results.length,
-                        1
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Retorno Prom. (años)</div>
-                  </div>
-                </div>
-                
                 {/* Simulations List */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {simulations.results.map((simulation, index) => (
@@ -240,17 +201,17 @@ const SimulationCard = ({ simulation, index }) => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-xl shadow-lg hover:bg-white hover:border-white transition-all duration-300 group p-6"
+      className="bg-white border-2 border-white rounded-xl shadow-lg transition-all duration-300 group p-6"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-white group-hover:text-gray-900 mb-1 transition-colors duration-300">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
             {simulation.project_name}
           </h3>
-          <p className="text-sm text-gray-200 group-hover:text-gray-600 transition-colors duration-300">{simulation.project_location}</p>
+          <p className="text-sm text-gray-600">{simulation.project_location}</p>
         </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-300 group-hover:text-gray-500 transition-colors duration-300">
+        <div className="flex items-center space-x-2 text-sm text-gray-500">
           <TypeIcon className="w-4 h-4" />
           <span>{getSimulationTypeLabel(simulation.simulation_type)}</span>
         </div>
@@ -259,72 +220,72 @@ const SimulationCard = ({ simulation, index }) => {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="text-xs font-medium text-gray-300 group-hover:text-gray-500 uppercase tracking-wide transition-colors duration-300">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Inversión Total
           </label>
-          <p className="text-lg font-semibold text-white group-hover:text-gray-900 transition-colors duration-300">
+          <p className="text-lg font-semibold text-gray-900">
             ${apiUtils.formatNumber(simulation.total_investment_usd)} USD
           </p>
         </div>
         
         <div>
-          <label className="text-xs font-medium text-gray-300 group-hover:text-gray-500 uppercase tracking-wide transition-colors duration-300">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             ROI Anual
           </label>
-          <p className="text-lg font-semibold text-green-200 group-hover:text-green-600 transition-colors duration-300">
+          <p className="text-lg font-semibold text-green-600">
             {apiUtils.formatNumber(simulation.roi_annual, 1)}%
           </p>
         </div>
         
         <div>
-          <label className="text-xs font-medium text-gray-300 group-hover:text-gray-500 uppercase tracking-wide transition-colors duration-300">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Ahorro Mensual
           </label>
-          <p className="text-lg font-semibold text-primary-200 group-hover:text-primary-600 transition-colors duration-300">
+          <p className="text-lg font-semibold text-primary-600">
             {apiUtils.formatCurrency(simulation.monthly_savings_ars)}
           </p>
         </div>
         
         <div>
-          <label className="text-xs font-medium text-gray-300 group-hover:text-gray-500 uppercase tracking-wide transition-colors duration-300">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Retorno
           </label>
-          <p className="text-lg font-semibold text-white group-hover:text-gray-900 transition-colors duration-300">
+          <p className="text-lg font-semibold text-gray-900">
             {apiUtils.formatNumber(simulation.payback_period_years, 1)} años
           </p>
         </div>
       </div>
       
       {/* Additional Details */}
-      <div className="border-t border-white/30 group-hover:border-gray-200 pt-4 space-y-2 transition-colors duration-300">
+      <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Potencia Instalada:</span>
-          <span className="font-medium text-white group-hover:text-gray-900 transition-colors duration-300">{apiUtils.formatPower(simulation.installed_power_kw)}</span>
+          <span className="text-gray-600">Potencia Instalada:</span>
+          <span className="font-medium text-gray-900">{apiUtils.formatPower(simulation.installed_power_kw)}</span>
         </div>
         
         <div className="flex justify-between text-sm">
-          <span className="text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Generación Mensual:</span>
-          <span className="font-medium text-white group-hover:text-gray-900 transition-colors duration-300">{apiUtils.formatNumber(simulation.monthly_generation_kwh)} kWh</span>
+          <span className="text-gray-600">Generación Mensual:</span>
+          <span className="font-medium text-gray-900">{apiUtils.formatNumber(simulation.monthly_generation_kwh)} kWh</span>
         </div>
         
         <div className="flex justify-between text-sm">
-          <span className="text-gray-200 group-hover:text-gray-600 transition-colors duration-300">Cobertura Lograda:</span>
-          <span className="font-medium text-accent-200 group-hover:text-accent-600 transition-colors duration-300">
+          <span className="text-gray-600">Cobertura Lograda:</span>
+          <span className="font-medium text-accent-600">
             {apiUtils.formatNumber(simulation.coverage_achieved, 1)}%
           </span>
         </div>
       </div>
       
       {/* Footer */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/30 group-hover:border-gray-200 transition-colors duration-300">
-        <div className="flex items-center text-xs text-gray-300 group-hover:text-gray-500 transition-colors duration-300">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <div className="flex items-center text-xs text-gray-500">
           <HiOutlineCalendar className="w-4 h-4 mr-1" />
           <span>{apiUtils.formatRelativeTime(simulation.created_at)}</span>
         </div>
         
         <Link
           to={`/simulations/${simulation.id}`}
-          className="px-3 py-1 text-sm bg-transparent border-2 border-white/30 text-white group-hover:bg-primary-600 group-hover:border-primary-600 group-hover:text-white rounded-lg transition-all duration-300 font-medium flex items-center"
+          className="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 text-white rounded-lg transition-all duration-300 font-medium flex items-center"
         >
           <HiOutlineEye className="w-4 h-4 mr-2" />
           Ver Detalles
