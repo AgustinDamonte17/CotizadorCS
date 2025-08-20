@@ -317,15 +317,15 @@ const ContactPage = () => {
               {[
                 {
                   question: '¿Cómo funciona la inversión en energía solar?',
-                  answer: 'Inviertes en proyectos de energía solar comunitaria y recibes retornos basados en la generación de energía y ahorros en costos eléctricos.',
+                  answer: 'Inviertes en una Comunidad Solar, tu inversión equivale a energía solar mensual generada y percibes el descuento en tu factura eléctrica..',
                 },
                 {
                   question: '¿Cuál es la inversión mínima?',
-                  answer: 'Puedes comenzar con inversiones pequeñas. El monto mínimo depende de cada proyecto, pero típicamente desde $100 USD.',
+                  answer: 'Puedes comenzar con inversiones pequeñas. El monto mínimo depende de cada Comunidad Solar, pero típicamente desde $100 USD.',
                 },
                 {
                   question: '¿Cómo se calculan los retornos?',
-                  answer: 'Los retornos se basan en la generación solar real, tarifas eléctricas actuales y contratos de venta de energía a largo plazo.',
+                  answer: 'Los retornos se basan en la generación solar real, tarifas eléctricas actuales y precio de venta de la energía.',
                 },
                 {
                   question: '¿Los proyectos están asegurados?',

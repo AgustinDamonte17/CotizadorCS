@@ -25,18 +25,18 @@ const HomePage = () => {
   const features = [
     {
       icon: HiOutlineSun,
-      title: 'Proyectos Verificados',
-      description: 'Todos nuestros proyectos solares pasan por un riguroso proceso de verificación técnica y financiera.',
+      title: 'CS Verificadas',
+      description: 'Todas nuestras Comunidades Solares se desarrollan en conjunto con distribuidoras y cooperativas de energía.',
     },
     {
       icon: HiOutlineChartBar,
       title: 'Simulaciones Precisas',
-      description: 'Motor de cálculo avanzado que considera tu consumo real y categoría tarifaria para proyecciones exactas.',
+      description: 'Motor de cálculo avanzado que considera tu factura eléctrica y categoría tarifaria para proyecciones precisas.',
     },
     {
       icon: HiOutlineCurrencyDollar,
       title: 'Inversión Accesible',
-      description: 'Invierte desde montos pequeños y diversifica tu cartera con múltiples proyectos de energía limpia.',
+      description: 'Invierte desde 100 USD en tu CS y comienza a generar retornos.',
     },
     {
       icon: HiOutlineShieldCheck,
@@ -110,7 +110,7 @@ const HomePage = () => {
             </p>
             
             <div className="flex justify-center">
-              <Link to="/comunidades-solares" className="bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg text-white hover:bg-primary-600 hover:border-primary-600 transition-all duration-300 text-lg px-8 py-4 font-medium">
+              <Link to="/comunidades-solares" className="bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 rounded-lg text-white transition-all duration-300 text-lg px-8 py-4 font-medium">
                 Explorar Comunidades Solares
               </Link>
             </div>
@@ -269,8 +269,19 @@ const HomePage = () => {
       </section>
       
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary-600 to-accent-600">
-        <div className="container-xl section-padding">
+      <section className="relative py-20">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <img 
+            src="/images/backgrounds/panelestrackers.jpg"
+            alt="Paneles solares con trackers - Inversión Solar"
+            className="w-full h-full object-cover object-top"
+          />
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+        </div>
+
+        <div className="container-xl section-padding relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -279,7 +290,7 @@ const HomePage = () => {
             className="text-center text-white"
           >
             <h2 className="text-section text-white mb-6">
-              ¿Listo para comenzar tu inversión solar?
+              ¿Listo para invertir solar?
             </h2>
             
             <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
