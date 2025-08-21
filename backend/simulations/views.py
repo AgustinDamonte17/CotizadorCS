@@ -279,7 +279,7 @@ class UserSimulationsView(generics.ListAPIView):
     """
     API view to list simulations for a specific user email
     """
-    serializer_class = SimulationSummarySerializer
+    serializer_class = InvestmentSimulationSerializer
     
     def get_queryset(self):
         user_email = self.request.query_params.get('email')

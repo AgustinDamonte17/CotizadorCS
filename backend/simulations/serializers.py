@@ -69,6 +69,7 @@ class InvestmentSimulationSerializer(serializers.ModelSerializer):
     
     project_name = serializers.CharField(source='project.name', read_only=True)
     project_location = serializers.CharField(source='project.location', read_only=True)
+    project_commercial_whatsapp = serializers.CharField(source='project.commercial_whatsapp', read_only=True)
     tariff_category_name = serializers.CharField(source='tariff_category.name', read_only=True)
     
     # Additional calculated fields
@@ -78,7 +79,7 @@ class InvestmentSimulationSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvestmentSimulation
         fields = [
-            'id', 'project_name', 'project_location', 'tariff_category_name',
+            'id', 'project_name', 'project_location', 'project_commercial_whatsapp', 'tariff_category_name',
             'user_email', 'user_phone',
             'monthly_bill_ars', 'simulation_type',
             'bill_coverage_percentage', 'number_of_panels', 'investment_amount_usd',
