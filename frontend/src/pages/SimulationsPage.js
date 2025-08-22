@@ -5,7 +5,6 @@ import { useQuery } from 'react-query';
 import { 
   HiOutlineChartBar,
   HiOutlineMail,
-  HiOutlineEye,
   HiOutlineCalculator,
   HiOutlineCurrencyDollar,
   HiOutlineLightningBolt,
@@ -361,38 +360,28 @@ const BestSimulationCard = ({ simulation, index }) => {
       {/* Additional Details */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Potencia Instalada:</span>
-          <span className="font-medium text-gray-900">{apiUtils.formatPower(simulation.installed_power_kw)}</span>
+          <span className="text-gray-600">Ahorro Mensual:</span>
+          <span className="font-medium text-green-600">{apiUtils.formatCurrency(simulation.monthly_savings_ars)}</span>
         </div>
         
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Generación Mensual:</span>
-          <span className="font-medium text-gray-900">{apiUtils.formatNumber(simulation.monthly_generation_kwh)} kWh</span>
+          <span className="text-gray-600">Ahorro Anual USD:</span>
+          <span className="font-medium text-green-600">${apiUtils.formatNumber(simulation.annual_savings_usd, 0)} USD</span>
         </div>
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Cobertura Lograda:</span>
           <span className="font-medium text-accent-600">
-            {apiUtils.formatNumber(simulation.coverage_achieved, 1)}%
+            {apiUtils.formatNumber(simulation.bill_coverage_achieved, 1)}%
           </span>
         </div>
       </div>
       
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-xs text-gray-500">
-            <HiOutlineCalendar className="w-4 h-4 mr-1" />
-            <span>{apiUtils.formatRelativeTime(simulation.created_at)}</span>
-          </div>
-          
-          <Link
-            to={`/simulations/${simulation.id}`}
-            className="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-500 hover:border-yellow-600 text-white rounded-lg transition-all duration-300 font-medium flex items-center"
-          >
-            <HiOutlineEye className="w-4 h-4 mr-2" />
-            Ver Detalles
-          </Link>
+        <div className="flex items-center text-xs text-gray-500">
+          <HiOutlineCalendar className="w-4 h-4 mr-1" />
+          <span>Creada {apiUtils.formatRelativeTime(simulation.created_at)}</span>
         </div>
         
         {/* WhatsApp Contact Button */}
@@ -490,38 +479,28 @@ const SimulationCard = ({ simulation, index }) => {
       {/* Additional Details */}
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Potencia Instalada:</span>
-          <span className="font-medium text-gray-900">{apiUtils.formatPower(simulation.installed_power_kw)}</span>
+          <span className="text-gray-600">Ahorro Mensual:</span>
+          <span className="font-medium text-green-600">{apiUtils.formatCurrency(simulation.monthly_savings_ars)}</span>
         </div>
         
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Generación Mensual:</span>
-          <span className="font-medium text-gray-900">{apiUtils.formatNumber(simulation.monthly_generation_kwh)} kWh</span>
+          <span className="text-gray-600">Ahorro Anual USD:</span>
+          <span className="font-medium text-green-600">${apiUtils.formatNumber(simulation.annual_savings_usd, 0)} USD</span>
         </div>
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Cobertura Lograda:</span>
           <span className="font-medium text-accent-600">
-            {apiUtils.formatNumber(simulation.coverage_achieved, 1)}%
+            {apiUtils.formatNumber(simulation.bill_coverage_achieved, 1)}%
           </span>
         </div>
       </div>
       
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-xs text-gray-500">
-            <HiOutlineCalendar className="w-4 h-4 mr-1" />
-            <span>{apiUtils.formatRelativeTime(simulation.created_at)}</span>
-          </div>
-          
-          <Link
-            to={`/simulations/${simulation.id}`}
-            className="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 text-white rounded-lg transition-all duration-300 font-medium flex items-center"
-          >
-            <HiOutlineEye className="w-4 h-4 mr-2" />
-            Ver Detalles
-          </Link>
+        <div className="flex items-center text-xs text-gray-500">
+          <HiOutlineCalendar className="w-4 h-4 mr-1" />
+          <span>Creada {apiUtils.formatRelativeTime(simulation.created_at)}</span>
         </div>
         
         {/* WhatsApp Contact Button */}
