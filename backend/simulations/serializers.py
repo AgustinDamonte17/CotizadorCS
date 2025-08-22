@@ -24,8 +24,9 @@ class SimulationInputSerializer(serializers.Serializer):
     project_id = serializers.IntegerField()
     monthly_bill_ars = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
     tariff_category_id = serializers.IntegerField()
-    user_email = serializers.EmailField(required=True)
-    user_phone = serializers.CharField(max_length=20, required=True)
+    user_email = serializers.EmailField(required=False)  # Opcional para usuarios autenticados
+    user_phone = serializers.CharField(max_length=20, required=False)  # Opcional para usuarios autenticados
+    access_code = serializers.CharField(max_length=50, required=False, help_text="Código de acceso al proyecto")
     
     # One of these three must be provided
     bill_coverage_percentage = serializers.DecimalField(

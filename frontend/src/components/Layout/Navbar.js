@@ -7,21 +7,32 @@ import {
   HiOutlineSun,
   HiOutlineChartBar,
   HiOutlineHome,
-  HiOutlineMail
+  HiOutlineMail,
+  HiOutlineLogin,
+  HiOutlineLogout,
+  HiOutlineUserCircle
 } from 'react-icons/hi';
-import { useSettings } from '../../context/AppContext';
+import { useSettings, useAuth } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const settings = useSettings();
+  const { isAuthenticated, user, logout } = useAuth();
   
-  const navigation = [
+  const publicNavigation = [
     { name: 'Inicio', href: '/', icon: HiOutlineHome },
     { name: 'Comunidades Solares', href: '/comunidades-solares', icon: HiOutlineSun },
-    { name: 'Mis Simulaciones', href: '/mis-simulaciones', icon: HiOutlineChartBar },
     { name: 'Contacto', href: '/contacto', icon: HiOutlineMail },
   ];
+  
+  const authenticatedNavigation = [
+    ...publicNavigation,
+    { name: 'Mis Simulaciones', href: '/mis-simulaciones', icon: HiOutlineChartBar },
+  ];
+  
+  const navigation = isAuthenticated ? authenticatedNavigation : publicNavigation;
   
   const isActive = (path) => {
     if (path === '/') {
@@ -31,6 +42,16 @@ const Navbar = () => {
   };
   
   const toggleMobile = () => setIsOpen(!isOpen);
+  
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Sesión cerrada exitosamente');
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
   
   return (
     <nav className="bg-white shadow-soft sticky top-0 z-50">
@@ -69,14 +90,39 @@ const Navbar = () => {
             })}
           </div>
           
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              to="/comunidades-solares"
-              className="btn btn-primary"
-            >
-              Simular Ahora
-            </Link>
+          {/* Auth Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <HiOutlineUserCircle className="w-4 h-4" />
+                  <span>Hola, {user?.first_name || user?.username}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  <HiOutlineLogout className="w-4 h-4" />
+                  <span>Salir</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-primary-600 transition-colors"
+                >
+                  <HiOutlineLogin className="w-4 h-4" />
+                  <span>Ingresar</span>
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn btn-primary"
+                >
+                  Registrarse
+                </Link>
+              </>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -126,15 +172,41 @@ const Navbar = () => {
                 );
               })}
               
-              {/* Mobile CTA */}
-              <div className="pt-4 border-t border-gray-100">
-                <Link
-                  to="/comunidades-solares"
-                  onClick={() => setIsOpen(false)}
-                  className="btn btn-primary w-full justify-center"
-                >
-                  Simular Ahora
-                </Link>
+              {/* Mobile Auth */}
+              <div className="pt-4 border-t border-gray-100 space-y-2">
+                {isAuthenticated ? (
+                  <>
+                    <div className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-600">
+                      <HiOutlineUserCircle className="w-5 h-5" />
+                      <span>Hola, {user?.first_name || user?.username}</span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 w-full text-left transition-all duration-200"
+                    >
+                      <HiOutlineLogout className="w-5 h-5" />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-all duration-200"
+                    >
+                      <HiOutlineLogin className="w-5 h-5" />
+                      <span>Ingresar</span>
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setIsOpen(false)}
+                      className="btn btn-primary w-full justify-center"
+                    >
+                      Registrarse
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

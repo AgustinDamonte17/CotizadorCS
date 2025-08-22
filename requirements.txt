@@ -6,6 +6,11 @@ Pillow==10.1.0
 python-decouple==3.8
 requests==2.31.0
 
+# Authentication and authorization
+djoser==2.2.0
+djangorestframework-simplejwt==5.3.0
+django-ratelimit==4.1.0
+
 # For API documentation
 drf-spectacular==0.26.5
 

@@ -1,8 +1,9 @@
-from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.contrib.auth.hashers import check_password
 from decimal import Decimal
 from .models import InvestmentSimulation, TariffCategory, ExchangeRate
 from projects.models import SolarProject
@@ -16,6 +17,27 @@ from .serializers import (
 )
 from .simulation_engine import SolarInvestmentCalculator
 from projects.models import SolarProject
+
+
+def _check_project_access(user, project, access_code=None):
+    """
+    Función auxiliar para verificar si un usuario tiene acceso a un proyecto
+    """
+    # Importar aquí para evitar imports circulares
+    from authentication.models import ProjectAccess
+    
+    # Verificar si ya tiene acceso concedido
+    if ProjectAccess.objects.filter(user=user, project=project).exists():
+        return True
+    
+    # Verificar si proporciona un código de acceso válido
+    if access_code:
+        return (
+            check_password(access_code, project.financial_access_password) or
+            access_code == project.financial_access_password
+        )
+    
+    return False
 
 
 class TariffCategoryListView(generics.ListAPIView):
@@ -120,9 +142,10 @@ def calculate_limits_view(request):
 
 
 @api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
 def create_simulation_view(request):
     """
-    API view to create a new investment simulation
+    API view to create a new investment simulation (requires authentication and project access)
     """
     serializer = SimulationInputSerializer(data=request.data)
     
@@ -136,31 +159,50 @@ def create_simulation_view(request):
                     id=serializer.validated_data['tariff_category_id']
                 )
                 
+                # Verificar acceso al proyecto
+                access_code = serializer.validated_data.get('access_code')
+                if not _check_project_access(request.user, project, access_code):
+                    return Response(
+                        {'error': 'Acceso denegado. Verifique el código de acceso del proyecto.'},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                
+                # Si proporciona código válido, crear el acceso
+                if access_code:
+                    from authentication.models import ProjectAccess
+                    ProjectAccess.objects.get_or_create(user=request.user, project=project)
+                
                 # Initialize calculator
                 calculator = SolarInvestmentCalculator(project, tariff_category)
                 
                 # Determine simulation type and run calculation
+                user_email = serializer.validated_data.get('user_email', request.user.email)
+                user_phone = serializer.validated_data.get('user_phone', '')
+                
                 if serializer.validated_data.get('bill_coverage_percentage') is not None:
                     simulation = calculator.simulate_by_bill_coverage(
                         monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
                         bill_coverage_percentage=serializer.validated_data['bill_coverage_percentage'],
-                        user_email=serializer.validated_data['user_email'],
-                        user_phone=serializer.validated_data['user_phone']
+                        user_email=user_email,
+                        user_phone=user_phone
                     )
                 elif serializer.validated_data.get('number_of_panels') is not None:
                     simulation = calculator.simulate_by_panels(
                         monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
                         number_of_panels=serializer.validated_data['number_of_panels'],
-                        user_email=serializer.validated_data['user_email'],
-                        user_phone=serializer.validated_data['user_phone']
+                        user_email=user_email,
+                        user_phone=user_phone
                     )
                 elif serializer.validated_data.get('investment_amount_usd') is not None:
                     simulation = calculator.simulate_by_investment(
                         monthly_bill_ars=serializer.validated_data['monthly_bill_ars'],
                         investment_amount_usd=serializer.validated_data['investment_amount_usd'],
-                        user_email=serializer.validated_data['user_email'],
-                        user_phone=serializer.validated_data['user_phone']
+                        user_email=user_email,
+                        user_phone=user_phone
                     )
+                
+                # Asociar la simulación con el usuario autenticado
+                simulation.user = request.user
                 
                 # Save simulation
                 simulation.save()
@@ -268,24 +310,27 @@ def compare_simulations_view(request):
 
 class SimulationDetailView(generics.RetrieveAPIView):
     """
-    API view to retrieve a specific simulation by ID
+    API view to retrieve a specific simulation by ID (only for the owner)
     """
-    queryset = InvestmentSimulation.objects.all()
     serializer_class = InvestmentSimulationSerializer
     lookup_field = 'id'
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        # Solo simulaciones del usuario autenticado
+        return InvestmentSimulation.objects.filter(user=self.request.user)
 
 
 class UserSimulationsView(generics.ListAPIView):
     """
-    API view to list simulations for a specific user email
+    API view to list simulations for the authenticated user
     """
     serializer_class = SimulationSummarySerializer
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        user_email = self.request.query_params.get('email')
-        if user_email:
-            return InvestmentSimulation.objects.filter(user_email=user_email)
-        return InvestmentSimulation.objects.none()
+        # Filtrar por usuario autenticado
+        return InvestmentSimulation.objects.filter(user=self.request.user).select_related('project')
 
 
 @api_view(['GET'])

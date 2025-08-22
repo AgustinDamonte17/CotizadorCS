@@ -9,10 +9,19 @@ const apiClient = axios.create({
   },
 });
 
+// Auth token management
+const getAuthToken = () => localStorage.getItem('authToken');
+const setAuthToken = (token) => localStorage.setItem('authToken', token);
+const removeAuthToken = () => localStorage.removeItem('authToken');
+
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Add any auth headers here if needed
+    // Add authentication token if available
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Token ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -37,8 +46,76 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Create auth client for authentication endpoints (different base URL)
+const authClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:8000',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add token to auth client requests too
+authClient.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Token ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Auth client response interceptor
+authClient.interceptors.response.use(
+  (response) => {
+    return response.data;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      removeAuthToken();
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 // API service object
 export const api = {
+  // Authentication endpoints
+  register: (userData) => {
+    return authClient.post('/auth/register/', userData);
+  },
+  
+  login: (credentials) => {
+    return authClient.post('/auth/login/', credentials);
+  },
+  
+  logout: () => {
+    return authClient.post('/auth/logout/');
+  },
+  
+  getCurrentUser: () => {
+    return authClient.get('/auth/user/');
+  },
+  
+  // Project access endpoints
+  verifyProjectAccess: (projectId, accessCode) => {
+    return authClient.post(`/auth/projects/${projectId}/verify-access/`, { access_code: accessCode });
+  },
+  
+  checkProjectAccess: (projectId) => {
+    return authClient.get(`/auth/projects/${projectId}/check-access/`);
+  },
+  
+  getUserProjectAccesses: () => {
+    return authClient.get('/auth/user/project-accesses/');
+  },
+  
   // Projects endpoints
   getProjects: (params = {}) => {
     return apiClient.get('/projects/', { params });
@@ -65,8 +142,8 @@ export const api = {
     return apiClient.get(`/simulations/${id}/`);
   },
   
-  getUserSimulations: (email) => {
-    return apiClient.get('/simulations/user/', { params: { email } });
+  getUserSimulations: () => {
+    return apiClient.get('/simulations/user/');
   },
   
   getSimulationStats: () => {
@@ -237,6 +314,13 @@ export const apiUtils = {
     
     return apiUtils.formatDate(dateString);
   },
+};
+
+// Export token management functions
+export const authTokens = {
+  get: getAuthToken,
+  set: setAuthToken,
+  remove: removeAuthToken,
 };
 
 export default api;

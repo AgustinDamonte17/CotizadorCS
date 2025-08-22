@@ -95,3 +95,33 @@ class SolarProjectCreateUpdateSerializer(serializers.ModelSerializer):
                 "El financiamiento recaudado no puede ser mayor a la meta de financiamiento."
             )
         return value
+
+
+class SolarProjectFinancialSerializer(serializers.ModelSerializer):
+    """
+    Serializer para información financiera protegida de un proyecto
+    """
+    funding_percentage = serializers.ReadOnlyField()
+    available_power_percentage = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = SolarProject
+        fields = [
+            'id', 'name', 'price_per_wp_usd', 'price_per_panel_usd', 'panel_power_wp',
+            'funding_goal', 'funding_raised', 'funding_deadline', 'funding_percentage',
+            'available_power', 'total_power_projected', 'available_power_percentage',
+            'expected_annual_generation', 'commercial_whatsapp'
+        ]
+
+
+class SolarProjectSimulatorConfigSerializer(serializers.ModelSerializer):
+    """
+    Serializer para la configuración del simulador de un proyecto
+    """
+    class Meta:
+        model = SolarProject
+        fields = [
+            'id', 'name', 'available_power', 'total_power_projected',
+            'price_per_wp_usd', 'price_per_panel_usd', 'panel_power_wp',
+            'expected_annual_generation'
+        ]

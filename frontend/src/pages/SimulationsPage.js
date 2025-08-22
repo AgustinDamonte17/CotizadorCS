@@ -9,7 +9,8 @@ import {
   HiOutlineCalculator,
   HiOutlineCurrencyDollar,
   HiOutlineLightningBolt,
-  HiOutlineCalendar
+  HiOutlineCalendar,
+  HiOutlineUser
 } from 'react-icons/hi';
 import { api, apiUtils } from '../services/api';
 import { useAuth } from '../context/AppContext';
@@ -17,24 +18,54 @@ import EmptyState from '../components/UI/EmptyState';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 
 const SimulationsPage = () => {
-  const { userEmail, setUserEmail } = useAuth();
-  const [inputEmail, setInputEmail] = useState(userEmail);
+  const { isAuthenticated, user } = useAuth();
   
   // Fetch user simulations
   const { data: simulations, isLoading, error, refetch } = useQuery(
-    ['userSimulations', userEmail],
-    () => api.getUserSimulations(userEmail),
+    ['userSimulations', user?.id],
+    () => api.getUserSimulations(),
     {
-      enabled: !!userEmail,
+      enabled: isAuthenticated && !!user,
     }
   );
   
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    if (inputEmail) {
-      setUserEmail(inputEmail);
-    }
-  };
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen relative py-8">
+        <div className="absolute inset-0">
+          <img 
+            src="/images/backgrounds/aereaparquesolar.jpg"
+            alt="Vista aérea de parque solar"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/80 to-primary-600/70"></div>
+        </div>
+
+        <div className="container-xl section-padding relative z-10">
+          <div className="max-w-md mx-auto text-center">
+            <div className="card p-6">
+              <HiOutlineUser className="w-12 h-12 text-primary-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-4">
+                Inicia sesión para ver tus simulaciones
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Necesitas una cuenta para acceder a tus simulaciones guardadas
+              </p>
+              <div className="space-y-3">
+                <Link to="/login" className="btn btn-primary w-full">
+                  Iniciar Sesión
+                </Link>
+                <Link to="/register" className="btn btn-outline w-full">
+                  Crear Cuenta
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   const getSimulationTypeLabel = (type) => {
     const labels = {
@@ -76,95 +107,46 @@ const SimulationsPage = () => {
           <p className="text-lg text-gray-100">
             Revisa y compara todas tus simulaciones de inversión en proyectos solares
           </p>
+          {user && (
+            <div className="mt-4 flex items-center space-x-2 text-gray-100">
+              <HiOutlineUser className="w-5 h-5" />
+              <span>Bienvenido, {user.first_name || user.username}</span>
+            </div>
+          )}
         </div>
         
-        {/* Email Input Section */}
-        {!userEmail && (
-          <div className="card p-6 mb-8">
-            <div className="max-w-md mx-auto text-center">
-              <HiOutlineMail className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-4">
-                Ingresa tu email para ver tus simulaciones
-              </h2>
-              <form onSubmit={handleEmailSubmit} className="space-y-4">
-                <input
-                  type="email"
-                  value={inputEmail}
-                  onChange={(e) => setInputEmail(e.target.value)}
-                  placeholder="tu@email.com"
-                  className="input"
-                  required
-                />
-                <button type="submit" className="btn btn-primary w-full">
-                  Ver Mis Simulaciones
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-        
-        {/* Change Email */}
-        {userEmail && (
-          <div className="bg-white border-2 border-white rounded-xl shadow-lg transition-all duration-300 group p-6 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-                <HiOutlineMail className="w-5 h-5 text-gray-600" />
-                <span className="text-gray-900">
-                  Mostrando simulaciones para: <span className="font-medium">{userEmail}</span>
-                </span>
-              </div>
-              <form onSubmit={handleEmailSubmit} className="flex space-x-2">
-                <input
-                  type="email"
-                  value={inputEmail}
-                  onChange={(e) => setInputEmail(e.target.value)}
-                  placeholder="Cambiar email"
-                  className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:outline-none transition-all duration-300 text-sm"
-                />
-                <button type="submit" className="px-4 py-2 bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 text-white rounded-lg transition-all duration-300 font-medium text-sm">
-                  Cambiar
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-        
         {/* Simulations Content */}
-        {userEmail && (
-          <>
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="large" />
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-red-600 mb-4">Error al cargar las simulaciones</p>
-                <button onClick={refetch} className="btn btn-primary">
-                  Reintentar
-                </button>
-              </div>
-            ) : simulations?.results?.length > 0 ? (
-              <div className="space-y-6">
-                {/* Simulations List */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {simulations.results.map((simulation, index) => (
-                    <SimulationCard key={simulation.id} simulation={simulation} index={index} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <EmptyState
-                icon={HiOutlineChartBar}
-                title="No tienes simulaciones aún"
-                description="Explora nuestros proyectos y crea tu primera simulación de inversión."
-                action={
-                  <Link to="/comunidades-solares" className="btn btn-primary">
-                    Explorar Proyectos
-                  </Link>
-                }
-              />
-            )}
-          </>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner size="large" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">Error al cargar las simulaciones</p>
+            <button onClick={refetch} className="btn btn-primary">
+              Reintentar
+            </button>
+          </div>
+        ) : simulations?.results?.length > 0 ? (
+          <div className="space-y-6">
+            {/* Simulations List */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {simulations.results.map((simulation, index) => (
+                <SimulationCard key={simulation.id} simulation={simulation} index={index} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <EmptyState
+            icon={HiOutlineChartBar}
+            title="No tienes simulaciones aún"
+            description="Explora nuestros proyectos y crea tu primera simulación de inversión."
+            action={
+              <Link to="/comunidades-solares" className="btn btn-primary">
+                Explorar Proyectos
+              </Link>
+            }
+          />
         )}
         
         {/* Help Section */}

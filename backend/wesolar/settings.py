@@ -31,9 +31,12 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
+    # 'djoser',  # Comentado por problemas de entorno
+    'rest_framework.authtoken',
 ]
 
 LOCAL_APPS = [
+    'authentication',
     'projects',
     'simulations',
     'core',
@@ -112,8 +115,15 @@ MEDIA_ROOT = BASE_DIR.parent / 'frontend' / 'public' / 'images'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Custom user model (comentado temporalmente)
+# AUTH_USER_MODEL = 'authentication.User'
+
 # Django REST Framework configuration
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
@@ -137,3 +147,49 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+# Email configuration
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='WeSolar <no-reply@wesolar.com>')
+
+# Djoser configuration (comentado temporalmente)
+# DJOSER = {
+#     'LOGIN_FIELD': 'username',  # Usar username por ahora con el User por defecto
+#     'USER_CREATE_PASSWORD_RETYPE': True,
+#     'USERNAME_CHANGED_EMAIL_CONFIRMATION': False,  # Deshabilitado para User por defecto
+#     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+#     'SEND_CONFIRMATION_EMAIL': True,
+#     'SEND_ACTIVATION_EMAIL': True,
+#     'SET_PASSWORD_RETYPE': True,
+#     'PASSWORD_RESET_CONFIRM_RETYPE': True,
+#     'TOKEN_MODEL': None,  # Use built-in Token model
+#     'ACTIVATION_URL': config('FRONTEND_ACTIVATION_URL', default='http://localhost:3000/activate') + '/{uid}/{token}',
+#     'PASSWORD_RESET_CONFIRM_URL': config('FRONTEND_PASSWORD_RESET_URL', default='http://localhost:3000/reset-password') + '/{uid}/{token}',
+#     'SERIALIZERS': {
+#         'user_create': 'authentication.serializers.UserCreateSerializer',
+#         'user': 'authentication.serializers.UserSerializer',
+#         'current_user': 'authentication.serializers.UserSerializer',
+#     },
+#     'EMAIL': {
+#         'activation': 'authentication.email.ActivationEmail',
+#         'confirmation': 'authentication.email.ConfirmationEmail',
+#         'password_reset': 'authentication.email.PasswordResetEmail',
+#     },
+#     'PERMISSIONS': {
+#         'user': ['djoser.permissions.CurrentUserOrAdmin'],
+#         'user_list': ['rest_framework.permissions.IsAdminUser'],
+#     },
+# }
+
+# Frontend URLs for email templates
+FRONTEND_ACTIVATION_URL = config('FRONTEND_ACTIVATION_URL', default='http://localhost:3000/activate')
+FRONTEND_PASSWORD_RESET_URL = config('FRONTEND_PASSWORD_RESET_URL', default='http://localhost:3000/reset-password')
