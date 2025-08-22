@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 from projects.models import SolarProject
 import uuid
 
@@ -123,6 +124,14 @@ class InvestmentSimulation(models.Model):
     
     # Project and user information
     project = models.ForeignKey(SolarProject, on_delete=models.CASCADE, related_name='simulations')
+    user = models.ForeignKey(
+        'auth.User', 
+        on_delete=models.CASCADE, 
+        related_name='simulations',
+        null=True,
+        blank=True,
+        help_text="Usuario autenticado (obligatorio para simulaciones persistidas)"
+    )
     user_email = models.EmailField('Email del Usuario')  # Required
     user_phone = models.CharField('Teléfono del Usuario', max_length=20)  # Required, includes +54
     

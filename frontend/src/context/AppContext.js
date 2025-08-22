@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { useQuery } from 'react-query';
-import { api } from '../services/api';
+import { useQuery, useQueryClient } from 'react-query';
+import { api, authTokens } from '../services/api';
 
 // Initial state
 const initialState = {
-  user: {
-    email: localStorage.getItem('userEmail') || '',
-    simulations: [],
+  auth: {
+    user: null,
+    token: authTokens.get(),
+    isAuthenticated: !!authTokens.get(),
+    isLoading: false,
   },
   settings: null,
   exchangeRate: null,
@@ -16,9 +18,19 @@ const initialState = {
 
 // Action types
 const actionTypes = {
+  // Auth actions
+  LOGIN_START: 'LOGIN_START',
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+  LOGIN_FAILURE: 'LOGIN_FAILURE',
+  LOGOUT: 'LOGOUT',
+  SET_USER: 'SET_USER',
+  
+  // Legacy actions (keeping for backward compatibility)
   SET_USER_EMAIL: 'SET_USER_EMAIL',
   SET_USER_SIMULATIONS: 'SET_USER_SIMULATIONS',
   ADD_SIMULATION: 'ADD_SIMULATION',
+  
+  // App actions
   SET_SETTINGS: 'SET_SETTINGS',
   SET_EXCHANGE_RATE: 'SET_EXCHANGE_RATE',
   SET_LOADING: 'SET_LOADING',
@@ -29,31 +41,95 @@ const actionTypes = {
 // Reducer function
 function appReducer(state, action) {
   switch (action.type) {
+    case actionTypes.LOGIN_START:
+      return {
+        ...state,
+        auth: {
+          ...state.auth,
+          isLoading: true,
+        },
+        error: null,
+      };
+    
+    case actionTypes.LOGIN_SUCCESS:
+      authTokens.set(action.payload.token);
+      return {
+        ...state,
+        auth: {
+          user: action.payload.user,
+          token: action.payload.token,
+          isAuthenticated: true,
+          isLoading: false,
+        },
+        error: null,
+      };
+    
+    case actionTypes.LOGIN_FAILURE:
+      authTokens.remove();
+      return {
+        ...state,
+        auth: {
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+        },
+        error: action.payload,
+      };
+    
+    case actionTypes.LOGOUT:
+      authTokens.remove();
+      return {
+        ...state,
+        auth: {
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+        },
+      };
+    
+    case actionTypes.SET_USER:
+      return {
+        ...state,
+        auth: {
+          ...state.auth,
+          user: action.payload,
+        },
+      };
+    
+    // Legacy actions (keeping for backward compatibility)
     case actionTypes.SET_USER_EMAIL:
       localStorage.setItem('userEmail', action.payload);
       return {
         ...state,
-        user: {
-          ...state.user,
-          email: action.payload,
+        auth: {
+          ...state.auth,
+          user: state.auth.user ? { ...state.auth.user, email: action.payload } : { email: action.payload },
         },
       };
     
     case actionTypes.SET_USER_SIMULATIONS:
       return {
         ...state,
-        user: {
-          ...state.user,
-          simulations: action.payload,
+        auth: {
+          ...state.auth,
+          user: {
+            ...state.auth.user,
+            simulations: action.payload,
+          },
         },
       };
     
     case actionTypes.ADD_SIMULATION:
       return {
         ...state,
-        user: {
-          ...state.user,
-          simulations: [action.payload, ...state.user.simulations],
+        auth: {
+          ...state.auth,
+          user: {
+            ...state.auth.user,
+            simulations: [action.payload, ...(state.auth.user?.simulations || [])],
+          },
         },
       };
     
@@ -99,6 +175,20 @@ const AppContext = createContext();
 // Context provider component
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const queryClient = useQueryClient();
+  
+  // Fetch current user if token exists
+  useQuery('currentUser', api.getCurrentUser, {
+    enabled: !!state.auth.token,
+    onSuccess: (data) => {
+      dispatch({ type: actionTypes.SET_USER, payload: data });
+    },
+    onError: (error) => {
+      console.error('Error fetching current user:', error);
+      // Token might be invalid
+      dispatch({ type: actionTypes.LOGOUT });
+    },
+  });
   
   // Fetch site settings
   useQuery('siteSettings', api.getSiteSettings, {
@@ -121,12 +211,12 @@ export function AppProvider({ children }) {
     refetchInterval: 30 * 60 * 1000, // Refetch every 30 minutes
   });
   
-  // Fetch user simulations when email changes
+  // Fetch user simulations when authenticated
   useQuery(
-    ['userSimulations', state.user.email],
-    () => api.getUserSimulations(state.user.email),
+    ['userSimulations', state.auth.user?.id],
+    () => api.getUserSimulations(),
     {
-      enabled: !!state.user.email,
+      enabled: state.auth.isAuthenticated && !!state.auth.user,
       onSuccess: (data) => {
         dispatch({ type: actionTypes.SET_USER_SIMULATIONS, payload: data.results || [] });
       },
@@ -138,6 +228,47 @@ export function AppProvider({ children }) {
   
   // Action creators
   const actions = {
+    // Auth actions
+    login: async (credentials) => {
+      try {
+        dispatch({ type: actionTypes.LOGIN_START });
+        const response = await api.login(credentials);
+        dispatch({ type: actionTypes.LOGIN_SUCCESS, payload: response });
+        queryClient.invalidateQueries('userSimulations');
+        return response;
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || 'Error en el login';
+        dispatch({ type: actionTypes.LOGIN_FAILURE, payload: errorMessage });
+        throw error;
+      }
+    },
+    
+    register: async (userData) => {
+      try {
+        dispatch({ type: actionTypes.LOGIN_START });
+        const response = await api.register(userData);
+        dispatch({ type: actionTypes.LOGIN_SUCCESS, payload: response });
+        queryClient.invalidateQueries('userSimulations');
+        return response;
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || 'Error en el registro';
+        dispatch({ type: actionTypes.LOGIN_FAILURE, payload: errorMessage });
+        throw error;
+      }
+    },
+    
+    logout: async () => {
+      try {
+        await api.logout();
+      } catch (error) {
+        console.error('Error during logout:', error);
+      } finally {
+        dispatch({ type: actionTypes.LOGOUT });
+        queryClient.clear();
+      }
+    },
+    
+    // Legacy actions (keeping for backward compatibility)
     setUserEmail: (email) => {
       dispatch({ type: actionTypes.SET_USER_EMAIL, payload: email });
     },
@@ -185,9 +316,21 @@ export function useAuth() {
   const { state, actions } = useApp();
   
   return {
-    userEmail: state.user.email,
+    // New auth properties
+    user: state.auth.user,
+    isAuthenticated: state.auth.isAuthenticated,
+    isLoading: state.auth.isLoading,
+    token: state.auth.token,
+    
+    // Auth actions
+    login: actions.login,
+    register: actions.register,
+    logout: actions.logout,
+    
+    // Legacy properties (for backward compatibility)
+    userEmail: state.auth.user?.email || '',
     setUserEmail: actions.setUserEmail,
-    isLoggedIn: !!state.user.email,
+    isLoggedIn: state.auth.isAuthenticated,
   };
 }
 

@@ -13,6 +13,8 @@ import ProjectDetailPage from './pages/ProjectDetailPage';
 import SimulationPage from './pages/SimulationPage';
 import SimulationsPage from './pages/SimulationsPage';
 import ContactPage from './pages/ContactPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Context providers
@@ -35,9 +37,15 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/comunidades-solares" element={<ProjectsPage />} />
               <Route path="/comunidades-solares/:id" element={<ProjectDetailPage />} />
+              <Route path="/contacto" element={<ContactPage />} />
+              
+              {/* Auth routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected routes */}
               <Route path="/simular/:id" element={<SimulationPage />} />
               <Route path="/mis-simulaciones" element={<SimulationsPage />} />
-              <Route path="/contacto" element={<ContactPage />} />
               
               {/* 404 route */}
               <Route path="*" element={<NotFoundPage />} />
