@@ -1,5 +1,30 @@
 from django.contrib import admin
-from .models import InvestmentSimulation, TariffCategory, ExchangeRate
+from .models import InvestmentSimulation, TariffCategory, ExchangeRate, EnergyPrice
+
+
+@admin.register(EnergyPrice)
+class EnergyPriceAdmin(admin.ModelAdmin):
+    list_display = ['price_ars_per_kwh', 'description', 'effective_date', 'is_active', 'created_at']
+    list_filter = ['is_active', 'effective_date', 'created_at']
+    search_fields = ['description']
+    readonly_fields = ['created_at', 'updated_at']
+    list_editable = ['is_active']
+    ordering = ['-effective_date']
+    
+    fieldsets = [
+        ('Configuración del Precio', {
+            'fields': ['price_ars_per_kwh', 'description', 'effective_date', 'is_active'],
+            'description': 'Configure el precio actual de la energía eléctrica. Solo debe haber un precio activo a la vez.'
+        }),
+        ('Metadatos', {
+            'fields': ['created_at', 'updated_at'],
+            'classes': ['collapse']
+        })
+    ]
+    
+    def get_queryset(self, request):
+        # Show active price first
+        return super().get_queryset(request).order_by('-is_active', '-effective_date')
 
 
 @admin.register(TariffCategory)
