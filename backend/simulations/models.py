@@ -4,8 +4,62 @@ from django.conf import settings
 from projects.models import SolarProject
 import uuid
 
-# Fixed energy price for savings calculation
+# Fixed energy price for savings calculation (legacy - use EnergyPrice model instead)
 ENERGY_PRICE_ARS_PER_KWH = 101.25  # Updated price in ARS per kWh
+
+
+class EnergyPrice(models.Model):
+    """Model to store the current energy price configuration"""
+    
+    price_ars_per_kwh = models.DecimalField(
+        'Precio de Energía (ARS por kWh)',
+        max_digits=8,
+        decimal_places=2,
+        default=101.25,
+        validators=[MinValueValidator(0)],
+        help_text='Precio actual de la energía eléctrica en pesos argentinos por kWh'
+    )
+    description = models.CharField(
+        'Descripción',
+        max_length=200,
+        blank=True,
+        help_text='Descripción opcional del precio (ej: "Precio promedio nacional")'
+    )
+    effective_date = models.DateField(
+        'Fecha de Vigencia',
+        auto_now_add=False,
+        help_text='Fecha desde la cual es efectivo este precio'
+    )
+    is_active = models.BooleanField(
+        'Activo',
+        default=True,
+        help_text='Solo debe haber un precio activo a la vez'
+    )
+    created_at = models.DateTimeField('Fecha de Creación', auto_now_add=True)
+    updated_at = models.DateTimeField('Última Actualización', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Precio de Energía'
+        verbose_name_plural = 'Precios de Energía'
+        ordering = ['-effective_date']
+    
+    def __str__(self):
+        return f"${self.price_ars_per_kwh} ARS/kWh - {self.effective_date}"
+    
+    @classmethod
+    def get_current_price(cls):
+        """Get the current active energy price"""
+        try:
+            active_price = cls.objects.filter(is_active=True).first()
+            return active_price.price_ars_per_kwh if active_price else ENERGY_PRICE_ARS_PER_KWH
+        except:
+            return ENERGY_PRICE_ARS_PER_KWH
+    
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Deactivate all other prices when this one is set as active
+            EnergyPrice.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
 
 
 class TariffCategory(models.Model):

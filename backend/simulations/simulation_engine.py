@@ -7,7 +7,7 @@ based on user monthly bill, tariff category, and investment parameters.
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any, Optional
-from .models import InvestmentSimulation, TariffCategory, ExchangeRate, ENERGY_PRICE_ARS_PER_KWH
+from .models import InvestmentSimulation, TariffCategory, ExchangeRate, EnergyPrice, ENERGY_PRICE_ARS_PER_KWH
 from projects.models import SolarProject
 
 
@@ -45,7 +45,7 @@ class SolarInvestmentCalculator:
         
         # Nueva fórmula: energía_generada = monto_factura_total / precio_energia
         # target_monthly_savings_ars es el equivalente al "monto de factura" que queremos cubrir
-        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        energy_price_ars = Decimal(str(EnergyPrice.get_current_price()))
         required_monthly_generation_kwh = target_monthly_savings_ars / energy_price_ars
         
         # Nueva fórmula: potencia = energia_generada / 24 / 0.19 / 30
@@ -225,7 +225,7 @@ class SolarInvestmentCalculator:
         # Calculate savings using the same formula as _calculate_monthly_savings
         # But with equivalent fractional panels instead of whole panels
         # Formula: equivalent_panels × 0.66 × precio_energia × 24 × 30 × 0.19
-        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        energy_price_ars = Decimal(str(EnergyPrice.get_current_price()))
         monthly_savings_ars = (
             equivalent_panels * 
             Decimal('0.66') * 
@@ -315,7 +315,7 @@ class SolarInvestmentCalculator:
         - 30: Days per month
         - 0.19: System performance factor
         """
-        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        energy_price_ars = Decimal(str(EnergyPrice.get_current_price()))
         
         monthly_savings_ars = (
             Decimal(str(number_of_panels)) * 
@@ -356,7 +356,7 @@ class SolarInvestmentCalculator:
         
         # Calculate maximum panels based on what would generate savings equal to the bill
         # For 100% coverage, we need panels that generate monthly_bill_ars in savings
-        energy_price_ars = Decimal(str(ENERGY_PRICE_ARS_PER_KWH))
+        energy_price_ars = Decimal(str(EnergyPrice.get_current_price()))
         
         # Use the new coverage formula in reverse
         # monthly_bill_ars = number_of_panels * ahorro_por_panel
