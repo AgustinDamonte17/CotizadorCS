@@ -97,13 +97,18 @@ class SimulationSummarySerializer(serializers.ModelSerializer):
     """Serializer for simulation summary (minimal fields)"""
     
     project_name = serializers.CharField(source='project.name', read_only=True)
+    project_location = serializers.CharField(source='project.location', read_only=True)
+    project_commercial_whatsapp = serializers.CharField(source='project.commercial_whatsapp', read_only=True)
+    
+    # Additional calculated fields
+    annual_savings_usd = serializers.ReadOnlyField()
     
     class Meta:
         model = InvestmentSimulation
         fields = [
-            'id', 'project_name', 'simulation_type',
-            'total_investment_usd', 'monthly_savings_ars',
-            'payback_period_years', 'roi_annual', 'created_at'
+            'id', 'project_name', 'project_location', 'project_commercial_whatsapp', 'simulation_type',
+            'total_investment_usd', 'monthly_savings_ars', 'installed_power_kw', 'monthly_generation_kwh',
+            'annual_savings_usd', 'payback_period_years', 'roi_annual', 'bill_coverage_achieved', 'created_at'
         ]
 
 

@@ -5,17 +5,69 @@ import { useQuery } from 'react-query';
 import { 
   HiOutlineChartBar,
   HiOutlineMail,
-  HiOutlineEye,
   HiOutlineCalculator,
   HiOutlineCurrencyDollar,
   HiOutlineLightningBolt,
   HiOutlineCalendar,
   HiOutlineUser
 } from 'react-icons/hi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { api, apiUtils } from '../services/api';
 import { useAuth } from '../context/AppContext';
 import EmptyState from '../components/UI/EmptyState';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
+import toast from 'react-hot-toast';
+
+// Function to create WhatsApp message for saved simulations
+const createWhatsAppMessage = (simulation) => {
+  const formatNumber = (num, decimals = 2) => {
+    if (num === null || num === undefined) return '0';
+    return new Intl.NumberFormat('es-AR', { 
+      minimumFractionDigits: decimals, 
+      maximumFractionDigits: decimals 
+    }).format(num);
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return '$0';
+    return new Intl.NumberFormat('es-AR', { 
+      style: 'currency', 
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const getSimulationTypeLabel = (type) => {
+    const labels = {
+      'bill_coverage': 'Cobertura de Factura',
+      'coverage': 'Cobertura de Factura',
+      'panels': 'Número de Paneles',
+      'investment': 'Monto de Inversión'
+    };
+    return labels[type] || type;
+  };
+
+  return `🌞 *CONSULTA SIMULACIÓN GUARDADA* 🌞
+
+📋 *INFORMACIÓN DEL PROYECTO*
+• Proyecto: ${simulation.project_name}
+• Ubicación: ${simulation.project_location}
+• Tipo de simulación: ${getSimulationTypeLabel(simulation.simulation_type)}
+
+📊 *RESULTADOS DE LA SIMULACIÓN*
+💰 Inversión Total: $${formatNumber(simulation.total_investment_usd)} USD
+⚡ Potencia Instalada: ${formatNumber(simulation.installed_power_kw, 2)} kW
+💲 Ahorro Anual (USD): $${formatNumber(simulation.annual_savings_usd, 0)}
+💵 Ahorro Mensual: ${formatCurrency(simulation.monthly_savings_ars)}
+📊 ROI Anual: ${formatNumber(simulation.roi_annual, 1)}%
+⏰ Período de Retorno: ${formatNumber(simulation.payback_period_years, 1)} años
+🎯 Cobertura Lograda: ${formatNumber(simulation.bill_coverage_achieved, 1)}%
+
+📅 *Simulación creada:* ${apiUtils.formatRelativeTime(simulation.created_at)}
+
+Quisiera recibir asesoramiento comercial sobre esta simulación guardada. ¡Gracias! 🙌`;
+};
 
 const SimulationsPage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -131,9 +183,25 @@ const SimulationsPage = () => {
           <div className="space-y-6">
             {/* Simulations List */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {simulations.results.map((simulation, index) => (
-                <SimulationCard key={simulation.id} simulation={simulation} index={index} />
-              ))}
+              {(() => {
+                // Sort simulations by ROI (highest first)
+                const sortedSimulations = [...simulations.results].sort((a, b) => 
+                  (b.roi_annual || 0) - (a.roi_annual || 0)
+                );
+                
+                // Determine if there's a clear best ROI (not all equal)
+                const roiValues = sortedSimulations.map(s => s.roi_annual || 0);
+                const hasDistinctROI = roiValues.length > 1 && roiValues[0] > roiValues[1];
+                
+                return sortedSimulations.map((simulation, index) => (
+                  <SimulationCard 
+                    key={simulation.id} 
+                    simulation={simulation} 
+                    index={index}
+                    isBestROI={hasDistinctROI && index === 0}
+                  />
+                ));
+              })()}
             </div>
           </div>
         ) : (
@@ -175,16 +243,40 @@ const SimulationsPage = () => {
 };
 
 // Simulation Card Component
-const SimulationCard = ({ simulation, index }) => {
+const SimulationCard = ({ simulation, index, isBestROI = false }) => {
   const TypeIcon = getSimulationTypeIcon(simulation.simulation_type);
+  
+  const handleWhatsAppContact = () => {
+    if (!simulation.project_commercial_whatsapp) {
+      toast.error('No hay número de WhatsApp configurado para este proyecto');
+      return;
+    }
+    
+    const message = createWhatsAppMessage(simulation);
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://web.whatsapp.com/send?phone=${simulation.project_commercial_whatsapp}&text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-white border-2 border-white rounded-xl shadow-lg transition-all duration-300 group p-6"
+      className={`bg-white rounded-xl shadow-lg transition-all duration-300 group p-6 relative ${
+        isBestROI 
+          ? 'border-4 border-yellow-600 shadow-yellow-100/20 shadow-lg ring-1 ring-yellow-500/15' 
+          : 'border-2 border-white'
+      }`}
     >
+      {/* Best ROI Badge */}
+      {isBestROI && (
+        <div className="absolute -top-3 left-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-4 py-1.5 rounded-full text-xs font-bold shadow-lg">
+          🏆 Mejor Retorno
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -246,32 +338,35 @@ const SimulationCard = ({ simulation, index }) => {
         </div>
         
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Generación Mensual:</span>
-          <span className="font-medium text-gray-900">{apiUtils.formatNumber(simulation.monthly_generation_kwh)} kWh</span>
+          <span className="text-gray-600">Ahorro Anual (USD):</span>
+          <span className="font-medium text-gray-900">${apiUtils.formatNumber(simulation.annual_savings_usd, 0)}</span>
         </div>
         
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Cobertura Lograda:</span>
           <span className="font-medium text-accent-600">
-            {apiUtils.formatNumber(simulation.coverage_achieved, 1)}%
+            {apiUtils.formatNumber(simulation.bill_coverage_achieved, 1)}%
           </span>
         </div>
       </div>
       
       {/* Footer */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+      <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
         <div className="flex items-center text-xs text-gray-500">
           <HiOutlineCalendar className="w-4 h-4 mr-1" />
           <span>{apiUtils.formatRelativeTime(simulation.created_at)}</span>
         </div>
         
-        <Link
-          to={`/simulations/${simulation.id}`}
-          className="px-3 py-1 text-sm bg-primary-600 hover:bg-primary-700 border-2 border-primary-600 hover:border-primary-700 text-white rounded-lg transition-all duration-300 font-medium flex items-center"
-        >
-          <HiOutlineEye className="w-4 h-4 mr-2" />
-          Ver Detalles
-        </Link>
+        {/* WhatsApp Button */}
+        {simulation.project_commercial_whatsapp && (
+          <button
+            onClick={handleWhatsAppContact}
+            className="btn w-full text-sm text-white bg-green-500 hover:bg-green-600 border-green-500 hover:border-green-600 transition-colors flex items-center justify-center"
+          >
+            <FaWhatsapp className="w-4 h-4 mr-2" />
+            Asesor Comercial
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -280,6 +375,7 @@ const SimulationCard = ({ simulation, index }) => {
 // Helper function moved inside component
 function getSimulationTypeLabel(type) {
   const labels = {
+    bill_coverage: 'Por Cobertura',
     coverage: 'Por Cobertura',
     panels: 'Por Paneles', 
     investment: 'Por Inversión',
@@ -289,6 +385,7 @@ function getSimulationTypeLabel(type) {
 
 function getSimulationTypeIcon(type) {
   const icons = {
+    bill_coverage: HiOutlineChartBar,
     coverage: HiOutlineChartBar,
     panels: HiOutlineLightningBolt,
     investment: HiOutlineCurrencyDollar,
