@@ -60,13 +60,20 @@ const ProjectDetailPage = () => {
 
   // Check if financial access is unlocked on component mount
   React.useEffect(() => {
-    if (project) {
-      const unlocked = localStorage.getItem(`financialAccessUnlocked_${project.id}`);
-      if (unlocked === 'true') {
-        setIsFinancialUnlocked(true);
+    const checkProjectAccess = async () => {
+      if (project && userEmail) {
+        try {
+          const response = await api.checkProjectAccess(project.id);
+          setIsFinancialUnlocked(response.has_access);
+        } catch (error) {
+          // Si no está autenticado o hay error, mantener bloqueado
+          setIsFinancialUnlocked(false);
+        }
       }
-    }
-  }, [project]);
+    };
+    
+    checkProjectAccess();
+  }, [project, userEmail]);
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
@@ -158,23 +165,29 @@ const ProjectDetailPage = () => {
   });
   
   // Handle password submission
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    const correctPassword = project.financial_access_password; // Contraseña específica del proyecto
     
-    if (passwordInput === correctPassword) {
+    try {
+      await api.verifyProjectAccess(project.id, passwordInput);
       setIsFinancialUnlocked(true);
       setShowPasswordModal(false);
       setPasswordInput('');
-      localStorage.setItem(`financialAccessUnlocked_${project.id}`, 'true');
-      toast.success('¡Acceso concedido! Ahora puedes ver la información financiera.');
-    } else {
-      toast.error('Contraseña incorrecta. Intenta nuevamente.');
+      toast.success('¡Acceso concedido! Ahora puedes ver la información financiera y simular inversiones.');
+    } catch (error) {
+      const errorMessage = apiUtils.extractErrorMessage(error);
+      toast.error(errorMessage || 'Contraseña incorrecta. Intenta nuevamente.');
       setPasswordInput('');
     }
   };
 
   const onSubmit = (data) => {
+    // Verificar que el usuario tenga acceso desbloqueado
+    if (!isFinancialUnlocked) {
+      toast.error('Debes desbloquear el acceso financiero antes de realizar una simulación.');
+      return;
+    }
+    
     const payload = {
       project_id: parseInt(id),
       monthly_bill_ars: parseFloat(data.monthly_bill_ars),
@@ -500,12 +513,21 @@ const ProjectDetailPage = () => {
                   <p className="text-gray-600 mb-4">
                     Calcula el retorno de tu inversión en este proyecto
                   </p>
-                  <Link
-                    to={`/simular/${project.id}`}
-                    className="btn btn-primary w-full text-center"
-                  >
-                    Simular Inversión
-                  </Link>
+                  {userEmail ? (
+                    <Link
+                      to={`/simular/${project.id}`}
+                      className="btn btn-primary w-full text-center"
+                    >
+                      Simular Inversión
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="btn btn-primary w-full text-center"
+                    >
+                      Iniciar Sesión para Simular
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
