@@ -28,6 +28,8 @@ const SimulationPage = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const [limits, setLimits] = useState(null);
   const [limitsLoading, setLimitsLoading] = useState(false);
+  const [hasProjectAccess, setHasProjectAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   // Fetch project details
   const { data: project, isLoading: projectLoading, error } = useQuery(
@@ -60,6 +62,43 @@ const SimulationPage = () => {
   const monthlyBill = watch('monthly_bill_ars');
   const investmentAmount = watch('investment_amount_usd');
   const tariffCategoryId = watch('tariff_category_id');
+
+  // Check project access on component mount
+  React.useEffect(() => {
+    const checkAccess = async () => {
+      if (!userEmail) {
+        setCheckingAccess(false);
+        setHasProjectAccess(false);
+        navigate('/login', { 
+          state: { from: `/simular/${id}`, message: 'Debes iniciar sesión para acceder al simulador.' }
+        });
+        return;
+      }
+
+      if (project) {
+        try {
+          const response = await api.checkProjectAccess(project.id);
+          setHasProjectAccess(response.has_access);
+          
+          if (!response.has_access) {
+            toast.error('Debes desbloquear el acceso financiero en el proyecto antes de usar el simulador.');
+            navigate(`/comunidades-solares/${id}`);
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking project access:', error);
+          setHasProjectAccess(false);
+          toast.error('Error verificando acceso. Redirigiendo al proyecto.');
+          navigate(`/comunidades-solares/${id}`);
+          return;
+        }
+      }
+      
+      setCheckingAccess(false);
+    };
+
+    checkAccess();
+  }, [project, userEmail, id, navigate]);
 
   // Clear other fields when simulation type changes
   React.useEffect(() => {
@@ -201,10 +240,31 @@ const SimulationPage = () => {
     createSimulationMutation.mutate(processedData);
   };
 
-  if (projectLoading) {
+  if (projectLoading || checkingAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="large" />
+        <div className="text-center">
+          <LoadingSpinner size="large" />
+          <p className="mt-4 text-gray-600">
+            {projectLoading ? 'Cargando proyecto...' : 'Verificando acceso...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasProjectAccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso Restringido</h2>
+          <p className="text-gray-600 mb-6">
+            Necesitas desbloquear el acceso financiero en el proyecto antes de usar el simulador.
+          </p>
+          <Link to={`/comunidades-solares/${id}`} className="btn btn-primary">
+            Ir al Proyecto
+          </Link>
+        </div>
       </div>
     );
   }
