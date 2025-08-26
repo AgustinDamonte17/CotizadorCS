@@ -3,8 +3,10 @@ Django settings for wesolar project.
 """
 
 from pathlib import Path
+import dj_database_url
 import os
 from decouple import config
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,13 +77,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wesolar.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Configuración de base de datos condicional
+if config('DEVELOPMENT', default=False, cast=bool):
+    # Base de datos de desarrollo (SQLite)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Base de datos de producción (PostgreSQL en Neon)
+    database_url = config('DATABASE_URL', default='postgresql://neondb_owner:npg_oDHPcpSE1U2b@ep-calm-surf-aek5ez53-pooler.c-2.us-east-2.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require')
+    tmpPostgres = urlparse(database_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': tmpPostgres.path.replace('/', ''),
+            'USER': tmpPostgres.username,
+            'PASSWORD': tmpPostgres.password,
+            'HOST': tmpPostgres.hostname,
+            'PORT': tmpPostgres.port or 5432,
+            'OPTIONS': {
+                'sslmode': 'require',
+                'channel_binding': 'require',
+            }
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
